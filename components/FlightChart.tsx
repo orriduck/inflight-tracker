@@ -114,7 +114,7 @@ export default function FlightChart({ data }: FlightChartProps) {
                 tickLine={false}
                 axisLine={false}
                 tickMargin={8}
-                domain={['dataMin - 500', 'dataMax + 500']}
+                domain={[0, 'dataMax + 500']}
               />
               <YAxis 
                 yAxisId="right" 
@@ -122,6 +122,7 @@ export default function FlightChart({ data }: FlightChartProps) {
                 tickLine={false}
                 axisLine={false}
                 tickMargin={8}
+                domain={[0, 'dataMax + 500']}
               />
               <Tooltip content={<CustomTooltip />} />
               <Area
