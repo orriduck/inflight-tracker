@@ -108,8 +108,10 @@ export default function FlightMetrics({ data, loading }: FlightMetricsProps) {
                 <h3 className="font-medium">{metric.title}</h3>
               </div>
               <div className="text-2xl font-bold">
-                {metric.value}
-                <span className="text-sm font-normal ml-1">{metric.unit}</span>
+                <div className="font-metric">
+                  {metric.value}
+                  <span className="text-sm ml-1 font-normal">{metric.unit}</span>
+                </div>
                 {!loading && metric.secondaryValue && (
                   <div className="text-sm font-normal text-muted-foreground mt-1">
                     ({metric.secondaryValue}{metric.secondaryUnit})
