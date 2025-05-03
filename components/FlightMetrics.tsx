@@ -86,7 +86,7 @@ export default function FlightMetrics({ data, loading }: FlightMetricsProps) {
     },
     {
       title: "Heading",
-      value: Math.floor(data.heading),
+      value: Math.abs(Math.floor(data.heading)),
       unit: "°",
       secondaryValue: getCompassDirection(data.heading),
       secondaryUnit: "",

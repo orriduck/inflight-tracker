@@ -17,13 +17,19 @@ InFlight Tracker is a web application designed to display real-time flight infor
 - Navigation information (origin, destination, flight number)
 - Responsive design for various devices
 - Exporting the flight data as a GPX file which can be used to be imported in other apps like Fog Of World etc.
+- Data persistence: Flight data is stored in localStorage and preserved between sessions
+- Dark mode support based on system preference
+- Flight-specific data storage to prevent mixing data between different flights
 
 ## Tech Stack
 - **Framework**: Next.js 15
 - **UI**: React 19, Tailwind CSS 4
+- **State Management**: React Context API with localStorage persistence
+- **Theme System**: next-themes for dark mode support
 - **Mapping**: Mapbox GL, MapLibre GL, React Map GL
 - **Charts**: Recharts
 - **Styling**: Tailwind CSS with custom animations
+- **Notifications**: Sonner for toast notifications
 - **GPX Support**: Mapbox To GeoJSON
 
 ## Getting Started
@@ -37,8 +43,21 @@ InFlight Tracker is a web application designed to display real-time flight infor
    pnpm dev
    ```
 
+## Features
+
+### Data Persistence
+The application now stores flight data in localStorage, allowing you to:
+- Resume tracking after refreshing the page
+- Keep historical flight data between sessions
+- Data is stored per flight number to prevent mixing different flights
+
+### Dark Mode
+- Automatically detects and applies your system's theme preference
+- Seamlessly switches between light and dark modes
+- Optimized UI elements for both themes
+
 ## Todo
-- Kept storing and resume the data when refreshing
+- ✅ Kept storing and resume the data when refreshing
 - Wrap up in docker or something to run
 - Detect Inflight WIFI before running
 

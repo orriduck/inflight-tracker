@@ -33,7 +33,7 @@ function HomePage() {
         />
       )}
       <main
-        className={`container mx-auto p-4 space-y-4 transition-all duration-700 ${hasMapData ? "pt-[75vh]" : "pt-24"}`}
+        className={`container mx-auto p-4 space-y-4 transition-all duration-700 ${hasMapData ? "pt-[70vh]" : "pt-24"} overflow-x-hidden`}
       >
         <div className={`${hasMapData ? "rounded-lg" : ""}`}>
           <div className="container mx-auto space-y-4 p-4">

@@ -89,8 +89,8 @@ export default function FlightChart({ flightData }: FlightChartProps) {
             >
               <defs>
                 <linearGradient id="colorAlt" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.1}/>
+                  <stop offset="5%" stopColor="#666666" stopOpacity={0.8}/>
+                  <stop offset="95%" stopColor="#666666" stopOpacity={0.1}/>
                 </linearGradient>
                 <linearGradient id="colorSpeed" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#fb923c" stopOpacity={0.8}/>
@@ -128,10 +128,10 @@ export default function FlightChart({ flightData }: FlightChartProps) {
                 type="monotone"
                 dataKey="altitude"
                 name="Altitude (ft)"
-                stroke="#3b82f6"
-                fillOpacity={0.3}
-                fill="url(#colorAlt)"
+                stroke="#666666"
                 activeDot={<CustomDot />}
+                fillOpacity={0.3}
+                fill="#666666"
               />
               <Area
                 yAxisId="right"
@@ -140,7 +140,7 @@ export default function FlightChart({ flightData }: FlightChartProps) {
                 name="Ground Speed (kts)"
                 stroke="#fb923c"
                 fillOpacity={0.3}
-                fill="url(#colorSpeed)"
+                fill="#fb923c"
               />
             </AreaChart>
           </ResponsiveContainer>

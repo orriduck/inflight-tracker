@@ -57,7 +57,7 @@ const MapBackground = ({ flightData, hasMapData, setHasMapData }: MapBackgroundP
           ...prev,
           latitude: latestData.latitude!,
           longitude: latestData.longitude!,
-          zoom: 6,
+          zoom: 7,
           bearing: 0,
           pitch: 0
         }));
@@ -107,7 +107,7 @@ const MapBackground = ({ flightData, hasMapData, setHasMapData }: MapBackgroundP
           'raster-contrast': 0.6,
           'raster-brightness-min': 0.1,
           'raster-brightness-max': 0.9,
-          'raster-opacity': 0.5
+          'raster-opacity': 0.2
         }
       }
     ]
