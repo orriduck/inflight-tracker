@@ -10,6 +10,7 @@ import {
 import { Rocket, Ruler, Clock, Wind, Thermometer, PlaneLanding, Compass } from "lucide-react";
 import { useEffect, useState } from "react";
 import { feetToMeters, knotsToKmh, getCompassDirection } from "@/lib/utils";
+import Counter from "@/components/ui/counter";
 
 interface FlightMetricsProps {
   data: FlightData;
@@ -38,47 +39,57 @@ export default function FlightMetrics({ data, loading }: FlightMetricsProps) {
   const metrics = [
     {
       title: "Ground Speed",
-      value: data.groundspeed,
+      value: Math.floor(data.groundspeed),
       unit: "knots",
       secondaryValue: knotsToKmh(data.groundspeed),
       secondaryUnit: "km/h",
       icon: <Rocket className="h-5 w-5" />,
+      places: [1000, 100, 10, 1],
     },
     {
       title: "Altitude",
-      value: data.altitude,
+      value: Math.floor(data.altitude),
       unit: "ft",
       secondaryValue: feetToMeters(data.altitude),
       secondaryUnit: "m",
       icon: <PlaneLanding className="h-5 w-5" />,
+      places: [10000, 1000, 100, 10],
     },
     {
       title: "Heading",
-      value: data.heading,
+      value: Math.floor(data.heading),
       unit: "°",
       secondaryValue: getCompassDirection(data.heading),
       secondaryUnit: "",
       icon: <Compass className="h-5 w-5" />,
-    },
-    {
-      title: "Longitude",
-      value: data.longitude.toFixed(3),
-      unit: "",
-      icon: <Ruler className="h-5 w-5" />,
-    },
-    {
-      title: "Latitude",
-      value: data.latitude.toFixed(3),
-      unit: "",
-      icon: <Ruler className="h-5 w-5" />,
+      places: [100, 10, 1],
     },
     {
       title: "Distance To Go",
-      value: data.distanceToGo,
+      value: Math.floor(data.distanceToGo),
       unit: "mi",
       secondaryValue: (data.distanceToGo * 1.60934).toFixed(0),
       secondaryUnit: "km",
       icon: <Ruler className="h-5 w-5" />,
+      places: [10000, 1000, 100, 10, 1],
+    },
+    {
+      title: "Latitude",
+      value: Math.floor(Math.abs(data.latitude)),
+      decimal: (Math.abs(data.latitude) % 1).toFixed(3).substring(2),
+      unit: data.latitude >= 0 ? "°N" : "°S",
+      icon: <Ruler className="h-5 w-5" />,
+      places: [100, 10, 1],
+      showDecimal: true,
+    },
+    {
+      title: "Longitude",
+      value: Math.floor(Math.abs(data.longitude)),
+      decimal: (Math.abs(data.longitude) % 1).toFixed(3).substring(2),
+      unit: data.longitude >= 0 ? "°E" : "°W",
+      icon: <Ruler className="h-5 w-5" />,
+      places: [100, 10, 1],
+      showDecimal: true,
     },
   ];
 
@@ -101,20 +112,45 @@ export default function FlightMetrics({ data, loading }: FlightMetricsProps) {
           {metrics.map((metric, index) => (
             <div 
               key={metric.title} 
-              className="p-4"
+              className="p-4 rounded-lg bg-black/5 hover:bg-black/10 transition-colors"
             >
               <div className="flex items-center gap-2 mb-2">
-                {metric.icon}
+                <div className="p-1.5 bg-black/10 rounded-full">
+                  {metric.icon}
+                </div>
                 <h3 className="font-medium">{metric.title}</h3>
               </div>
-              <div className="text-2xl font-bold">
-                <div className="font-metric">
-                  {metric.value}
+              <div className="font-bold">
+                <div className="flex items-baseline">
+                  <div>
+                    <Counter
+                      value={metric.value}
+                      fontSize={28}
+                      places={metric.places}
+                      gap={2}
+                      borderRadius={4}
+                      textColor="inherit"
+                      fontWeight="bold"
+                      gradientHeight={10}
+                      gradientFrom="rgba(0,0,0,0.4)"
+                      gradientTo="transparent"
+                      counterStyle={{
+                        background: "transparent",
+                        padding: "0.25rem",
+                      }}
+                    />
+                  </div>
+                  {metric.showDecimal && (
+                    <>
+                      <span className="text-xl mx-0.5">.</span>
+                      <span className="text-xl">{metric.decimal}</span>
+                    </>
+                  )}
                   <span className="text-sm ml-1 font-normal">{metric.unit}</span>
                 </div>
                 {!loading && metric.secondaryValue && (
                   <div className="text-sm font-normal text-muted-foreground mt-1">
-                    ({metric.secondaryValue}{metric.secondaryUnit})
+                    ({metric.secondaryValue} {metric.secondaryUnit})
                   </div>
                 )}
               </div>

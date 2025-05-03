@@ -15,13 +15,19 @@ export default function WifiIndicator() {
     // Initial check
     updateConnectionStatus();
 
-    // Listen for online/offline events
+    // Listen for online/offline events for immediate status changes
     window.addEventListener('online', updateConnectionStatus);
     window.addEventListener('offline', updateConnectionStatus);
+    
+    // Set up polling to check status every second
+    const intervalId = setInterval(() => {
+      updateConnectionStatus();
+    }, 1000);
 
     return () => {
       window.removeEventListener('online', updateConnectionStatus);
       window.removeEventListener('offline', updateConnectionStatus);
+      clearInterval(intervalId);
     };
   }, []);
 
@@ -43,11 +49,4 @@ export default function WifiIndicator() {
   );
 }
 
-// Add this to your global CSS (e.g., app/globals.css):
-// .animate-glow-green {
-//   animation: wifi-glow 1.2s infinite alternate;
-// }
-// @keyframes wifi-glow {
-//   0% { filter: drop-shadow(0 0 0px #22c55e); }
-//   100% { filter: drop-shadow(0 0 8px #22c55e); }
-// }
+

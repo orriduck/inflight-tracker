@@ -29,24 +29,18 @@ const MapBackground = ({ flightData, hasMapData, setHasMapData }: MapBackgroundP
   // Check if OpenStreetMap tiles are available
   useEffect(() => {
     const checkMapTileAvailability = async () => {
-      try {
-        // Try to fetch a test tile from OpenStreetMap
-        const testTileUrl = 'https://tile.openstreetmap.org/0/0/0.png';
-        const response = await fetch(testTileUrl, { method: 'HEAD' });
-        
-        if (response.ok) {
-          setHasMapData(true);
-        } else {
-          setHasMapData(false);
-        }
-      } catch (error) {
-        console.error('Failed to check map tile availability:', error);
+    const testTileUrl = 'https://tile.openstreetmap.org/0/0/0.png';
+    await fetch(testTileUrl, { method: 'HEAD' })
+      .then(() => {
+        setHasMapData(true);
+      })
+      .catch((error) => {
         setHasMapData(false);
-      }
-    };
+      })
+    }
     
     checkMapTileAvailability();
-  }, [setHasMapData]);
+  }, []);
 
   useEffect(() => {
     if (flightData.length > 0) {
