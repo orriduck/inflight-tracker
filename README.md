@@ -35,6 +35,11 @@ InFlight Tracker is a web application designed to display real-time flight infor
    pnpm dev
    ```
 
+## Todo
+- Kept storing and resume the data when refreshing
+- Wrap up in docker or something to run
+- Detect Inflight WIFI before running
+
 ## Screenshots
-![image](https://github.com/user-attachments/assets/e8b26b01-2f41-4f70-a6d2-e44c4b41e28f)
+![image](https://github.com/user-attachments/assets/93456096-a840-4186-9c14-0fc2e0fe8375)
 ![image](https://github.com/user-attachments/assets/b3ab87f6-b526-4836-8d47-05404ae0ab2b)
