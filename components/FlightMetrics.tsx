@@ -13,9 +13,10 @@ import { feetToMeters, knotsToKmh, getCompassDirection } from "@/lib/utils";
 
 interface FlightMetricsProps {
   data: FlightData;
+  loading: boolean;
 }
 
-export default function FlightMetrics({ data }: FlightMetricsProps) {
+export default function FlightMetrics({ data, loading }: FlightMetricsProps) {
   const [columns, setColumns] = useState(3);
 
   // Update columns based on screen size
@@ -109,7 +110,7 @@ export default function FlightMetrics({ data }: FlightMetricsProps) {
               <div className="text-2xl font-bold">
                 {metric.value}
                 <span className="text-sm font-normal ml-1">{metric.unit}</span>
-                {metric.secondaryValue && (
+                {!loading && metric.secondaryValue && (
                   <div className="text-sm font-normal text-muted-foreground mt-1">
                     ({metric.secondaryValue}{metric.secondaryUnit})
                   </div>
