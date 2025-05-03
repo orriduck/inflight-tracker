@@ -1,16 +1,45 @@
 "use client";
 
 import { FlightData } from "@/types/flight";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Rocket, Ruler, Clock, Wind, Thermometer, PlaneLanding, Compass } from "lucide-react";
+  Rocket,
+  Ruler,
+  Clock,
+  Wind,
+  Thermometer,
+  PlaneLanding,
+  Compass,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { feetToMeters, knotsToKmh, getCompassDirection } from "@/lib/utils";
 import Counter from "@/components/ui/counter";
+import { LucideIcon } from "lucide-react";
+
+// Define interfaces for our metrics
+interface BaseMetric {
+  title: string;
+  icon: React.ReactNode;
+  unit: string;
+  secondaryValue?: string | number;
+  secondaryUnit?: string;
+}
+
+interface StandardMetric extends BaseMetric {
+  value: number;
+  places: number[];
+  isCoordinate?: false;
+}
+
+interface CoordinateMetric extends BaseMetric {
+  wholeValue: number;
+  decimalValue: number;
+  wholePlaces: number[];
+  decimalPlaces: number[];
+  isCoordinate: true;
+}
+
+type Metric = StandardMetric | CoordinateMetric;
 
 interface FlightMetricsProps {
   data: FlightData;
@@ -32,11 +61,11 @@ export default function FlightMetrics({ data, loading }: FlightMetricsProps) {
       }
     };
     handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const metrics = [
+  const metrics: Metric[] = [
     {
       title: "Ground Speed",
       value: Math.floor(data.groundspeed),
@@ -75,21 +104,23 @@ export default function FlightMetrics({ data, loading }: FlightMetricsProps) {
     },
     {
       title: "Latitude",
-      value: Math.floor(Math.abs(data.latitude)),
-      decimal: (Math.abs(data.latitude) % 1).toFixed(3).substring(2),
+      wholeValue: Math.floor(Math.abs(data.latitude)),
+      decimalValue: Math.floor((Math.abs(data.latitude) % 1) * 1000),
       unit: data.latitude >= 0 ? "°N" : "°S",
       icon: <Ruler className="h-5 w-5" />,
-      places: [100, 10, 1],
-      showDecimal: true,
+      wholePlaces: [100, 10, 1],
+      decimalPlaces: [100, 10, 1],
+      isCoordinate: true,
     },
     {
       title: "Longitude",
-      value: Math.floor(Math.abs(data.longitude)),
-      decimal: (Math.abs(data.longitude) % 1).toFixed(3).substring(2),
+      wholeValue: Math.floor(Math.abs(data.longitude)),
+      decimalValue: Math.floor((Math.abs(data.longitude) % 1) * 1000),
       unit: data.longitude >= 0 ? "°E" : "°W",
       icon: <Ruler className="h-5 w-5" />,
-      places: [100, 10, 1],
-      showDecimal: true,
+      wholePlaces: [100, 10, 1],
+      decimalPlaces: [100, 10, 1],
+      isCoordinate: true,
     },
   ];
 
@@ -110,45 +141,54 @@ export default function FlightMetrics({ data, loading }: FlightMetricsProps) {
       <CardContent>
         <div className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4`}>
           {metrics.map((metric, index) => (
-            <div 
-              key={metric.title} 
-              className="p-4 rounded-lg bg-black/5 hover:bg-black/10 transition-colors"
-            >
+            <div key={metric.title} className="p-4 rounded-lg">
               <div className="flex items-center gap-2 mb-2">
-                <div className="p-1.5 bg-black/10 rounded-full">
-                  {metric.icon}
-                </div>
+                {metric.icon}
                 <h3 className="font-medium">{metric.title}</h3>
               </div>
               <div className="font-bold">
-                <div className="flex items-baseline">
-                  <div>
-                    <Counter
-                      value={metric.value}
-                      fontSize={28}
-                      places={metric.places}
-                      gap={2}
-                      borderRadius={4}
-                      textColor="inherit"
-                      fontWeight="bold"
-                      gradientHeight={10}
-                      gradientFrom="rgba(0,0,0,0.4)"
-                      gradientTo="transparent"
-                      counterStyle={{
-                        background: "transparent",
-                        padding: "0.25rem",
-                      }}
-                    />
+                {metric.isCoordinate ? (
+                  <div className="flex items-baseline">
+                    <div className="font-metric">
+                      <Counter
+                        value={metric.wholeValue}
+                        fontSize={28}
+                        places={metric.wholePlaces}
+                        gap={1}
+                        borderRadius={4}
+                      />
+                    </div>
+                    <span className="text-xl">.</span>
+                    <div className="font-metric">
+                      <Counter
+                        value={metric.decimalValue}
+                        fontSize={20}
+                        places={metric.decimalPlaces}
+                        gap={1}
+                        borderRadius={4}
+                      />
+                    </div>
+                    <span className="text-sm ml-1 font-normal">
+                      {metric.unit}
+                    </span>
                   </div>
-                  {metric.showDecimal && (
-                    <>
-                      <span className="text-xl mx-0.5">.</span>
-                      <span className="text-xl">{metric.decimal}</span>
-                    </>
-                  )}
-                  <span className="text-sm ml-1 font-normal">{metric.unit}</span>
-                </div>
-                {!loading && metric.secondaryValue && (
+                ) : (
+                  <div className="flex items-baseline">
+                    <div className="font-metric">
+                      <Counter
+                        value={metric.value}
+                        fontSize={28}
+                        places={metric.places}
+                        gap={1}
+                        borderRadius={4}
+                      />
+                    </div>
+                    <span className="text-sm ml-1 font-normal">
+                      {metric.unit}
+                    </span>
+                  </div>
+                )}
+                {!loading && !!metric.secondaryValue && (
                   <div className="text-sm font-normal text-muted-foreground mt-1">
                     ({metric.secondaryValue} {metric.secondaryUnit})
                   </div>
@@ -160,4 +200,4 @@ export default function FlightMetrics({ data, loading }: FlightMetricsProps) {
       </CardContent>
     </Card>
   );
-} 
+}
