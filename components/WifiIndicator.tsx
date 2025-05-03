@@ -32,20 +32,13 @@ export default function WifiIndicator() {
   }, []);
 
   return (
-    <button
-      type="button"
-      className={cn(
-        'inline-flex items-center justify-center rounded-md px-2 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 bg-primary-foreground text-primary hover:bg-primary-foreground/90'
-      )}
-      title={isConnected ? 'Connected' : 'Disconnected'}
-      tabIndex={0}
-    >
+    <div className="inline-flex items-center justify-center" title={isConnected ? 'Connected' : 'Disconnected'}>
       {isConnected ? (
-        <Wifi className={cn("w-5 h-5 text-green-500", "animate-glow-green")} />
+        <Wifi className={cn("w-5 h-5 text-green-500", "animate-glow-green")} aria-hidden="true" />
       ) : (
-        <WifiOff className="w-5 h-5 text-red-500" />
+        <WifiOff className="w-5 h-5 text-red-500" aria-hidden="true" />
       )}
-    </button>
+    </div>
   );
 }
 

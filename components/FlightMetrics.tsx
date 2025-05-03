@@ -134,14 +134,14 @@ export default function FlightMetrics({ data, loading }: FlightMetricsProps) {
   };
 
   return (
-    <Card className="w-full">
-      <CardHeader>
+    <Card>
+      <CardHeader className="py-2">
         <CardTitle>Flight Metrics</CardTitle>
       </CardHeader>
       <CardContent>
         <div className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4`}>
           {metrics.map((metric, index) => (
-            <div key={metric.title} className="p-4 rounded-lg">
+            <div key={metric.title} className="rounded-lg">
               <div className="flex items-center gap-2 mb-2">
                 {metric.icon}
                 <h3 className="font-medium">{metric.title}</h3>

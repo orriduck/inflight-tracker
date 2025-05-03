@@ -1,10 +1,18 @@
-import { Download, RefreshCw } from "lucide-react";
+import { Download, RefreshCw, Trash, MoreHorizontal } from "lucide-react";
 import { convertToGPX, downloadGPX } from "@/utils/gpx";
 import { FlightData } from "@/types/flight";
 import WifiIndicator from "./WifiIndicator";
 import { cn } from "@/lib/utils";
 import { useFlightData } from "@/app/contexts/FlightDataContext";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+  DropdownMenuItem,
+  DropdownMenuSeparator
+} from "@/components/ui/dropdown-menu";
 
 interface NavBarProps {
   from?: string; // ICAO or IATA code
@@ -31,15 +39,18 @@ export default function NavBar({
   flightData = [],
 }: NavBarProps) {
   const { resetData } = useFlightData();
+  const [open, setOpen] = useState(false);
 
   const handleExport = () => {
     if (flightData.length === 0) return;
     const gpxContent = convertToGPX(flightData);
     downloadGPX(gpxContent, flightNumber || "flight");
+    setOpen(false);
   };
 
   const handleReset = () => {
     resetData();
+    setOpen(false);
   };
 
   const elapsed =
@@ -101,25 +112,46 @@ export default function NavBar({
             </span>
           </div>
 
-          {/* Export Button */}
-          <div className="flex items-center gap-2">
-            <Button
-              onClick={handleExport}
-              variant="default"
-              className="bg-primary-foreground text-primary hover:bg-primary-foreground/90"
-              disabled={flightData.length === 0}
-            >
-              <Download size={16} />
-              Export GPX
-            </Button>
-
-            {/* Reset Button */}
-            <Button onClick={handleReset} variant="destructive">
-              <RefreshCw size={16} />
-              Reset
-            </Button>
-            <WifiIndicator />
-          </div>
+          {/* Dropdown Menu */}
+          <DropdownMenu open={open} onOpenChange={setOpen}>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="outline" 
+                size="icon" 
+                className="bg-primary-foreground text-primary hover:bg-primary-foreground/90"
+              >
+                <MoreHorizontal />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem 
+                onClick={handleExport}
+                disabled={flightData.length === 0}
+                className="cursor-pointer"
+              >
+                <Download />
+                Export GPX
+              </DropdownMenuItem>
+              
+              <DropdownMenuSeparator />
+              
+              <DropdownMenuItem 
+                onClick={handleReset}
+                variant="destructive"
+                className="cursor-pointer"
+              >
+                <Trash />
+                Reset Data
+              </DropdownMenuItem>
+              
+              <DropdownMenuSeparator />
+              
+              <div className="px-2 py-1.5 flex items-center">
+                <span className="mr-2 text-sm">Connection:</span>
+                <WifiIndicator />
+              </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </nav>
