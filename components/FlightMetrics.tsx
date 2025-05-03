@@ -72,10 +72,12 @@ export default function FlightMetrics({ data }: FlightMetricsProps) {
       icon: <Ruler className="h-5 w-5" />,
     },
     {
-      title: "Flight Phase",
-      value: data.flightPhase,
-      unit: "",
-      icon: <PlaneLanding className="h-5 w-5" />,
+      title: "Distance To Go",
+      value: data.distanceToGo,
+      unit: "mi",
+      secondaryValue: (data.distanceToGo * 1.60934).toFixed(0),
+      secondaryUnit: "km",
+      icon: <Ruler className="h-5 w-5" />,
     },
   ];
 

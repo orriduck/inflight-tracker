@@ -1,23 +1,22 @@
 "use client"
 
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
-import { FlightData } from "@/types/flight-data"
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts"
+import { FlightData } from "@/types/flight"
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
 
 interface FlightChartProps {
-  data: FlightData[]
+  flightData: FlightData[]
 }
 
-export default function FlightChart({ data }: FlightChartProps) {
+export default function FlightChart({ flightData }: FlightChartProps) {
   // Format data for chart
-  const chartData = data.map((entry) => ({
+  const chartData = flightData.map((entry) => ({
     time: new Date(entry.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
     altitude: entry.altitude,
     groundspeed: entry.groundspeed,
@@ -79,13 +78,10 @@ export default function FlightChart({ data }: FlightChartProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Flight Metrics</CardTitle>
-        <CardDescription>
-          Altitude and Ground Speed with Directional Indicators
-        </CardDescription>
+        <CardTitle>Altitude & Ground Speed Over Time</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-80">
+        <div className="h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               data={chartData}
@@ -93,12 +89,12 @@ export default function FlightChart({ data }: FlightChartProps) {
             >
               <defs>
                 <linearGradient id="colorAlt" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0.1}/>
+                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
+                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.1}/>
                 </linearGradient>
                 <linearGradient id="colorSpeed" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(var(--chart-2))" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="hsl(var(--chart-2))" stopOpacity={0.1}/>
+                  <stop offset="5%" stopColor="#fb923c" stopOpacity={0.8}/>
+                  <stop offset="95%" stopColor="#fb923c" stopOpacity={0.1}/>
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -107,6 +103,7 @@ export default function FlightChart({ data }: FlightChartProps) {
                 tickLine={false}
                 axisLine={false}
                 tickMargin={8}
+                interval={Math.ceil(chartData.length / 4) - 1} // Show fewer ticks
               />
               <YAxis 
                 yAxisId="left" 
@@ -125,11 +122,13 @@ export default function FlightChart({ data }: FlightChartProps) {
                 domain={[0, 'dataMax + 500']}
               />
               <Tooltip content={<CustomTooltip />} />
+              <Legend verticalAlign="top" height={36} />
               <Area
                 yAxisId="left"
                 type="monotone"
                 dataKey="altitude"
-                stroke="hsl(var(--chart-1))"
+                name="Altitude (ft)"
+                stroke="#3b82f6"
                 fillOpacity={0.3}
                 fill="url(#colorAlt)"
                 activeDot={<CustomDot />}
@@ -138,7 +137,8 @@ export default function FlightChart({ data }: FlightChartProps) {
                 yAxisId="right"
                 type="monotone"
                 dataKey="groundspeed"
-                stroke="hsl(var(--chart-2))"
+                name="Ground Speed (kts)"
+                stroke="#fb923c"
                 fillOpacity={0.3}
                 fill="url(#colorSpeed)"
               />
@@ -146,12 +146,6 @@ export default function FlightChart({ data }: FlightChartProps) {
           </ResponsiveContainer>
         </div>
       </CardContent>
-      <CardFooter>
-        <div className="grid gap-1 text-sm">
-          <div className="font-medium">Flight AAL2408</div>
-          <div className="text-muted-foreground">KPHL → KLAX</div>
-        </div>
-      </CardFooter>
     </Card>
   )
 } 
