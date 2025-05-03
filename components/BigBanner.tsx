@@ -1,4 +1,4 @@
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Download } from "lucide-react";
 import FlightProgress from "./FlightProgress";
 import {
   Card,
@@ -6,6 +6,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { convertToGPX, downloadGPX } from "@/utils/gpx";
+import { FlightData } from "@/types/flight";
 
 interface BigBannerProps {
   from: string;
@@ -13,6 +15,7 @@ interface BigBannerProps {
   flightNumber: string;
   flightDuration?: number;  // in minutes
   timeToGo?: number;        // in minutes
+  flightData: FlightData[]; // Add flight data for export
 }
 
 export default function BigBanner({ 
@@ -20,12 +23,27 @@ export default function BigBanner({
   to = 'LAX', 
   flightNumber = 'AA12',
   flightDuration = 360,
-  timeToGo = 180
+  timeToGo = 180,
+  flightData = []
 }: BigBannerProps) {
+  const handleExport = () => {
+    if (flightData.length === 0) return;
+    const gpxContent = convertToGPX(flightData);
+    downloadGPX(gpxContent, flightNumber);
+  };
+
   return (
     <Card className="w-full">
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Flight Info</CardTitle>
+        <button
+          onClick={handleExport}
+          className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          disabled={flightData.length === 0}
+        >
+          <Download size={16} />
+          Export GPX
+        </button>
       </CardHeader>
       <CardContent>
         <div className="flex flex-col items-center justify-center">

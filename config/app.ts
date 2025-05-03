@@ -1,4 +1,4 @@
 export const config = {
-  pollingInterval: 1000, // Polling interval in milliseconds
+  pollingInterval: 3000, // Polling interval in milliseconds
   apiUrl: 'http://localhost:3000/api/flight'
 } as const; 
