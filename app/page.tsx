@@ -12,6 +12,7 @@ export default function Home() {
   const [flightData, setFlightData] = useState<FlightData[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [hasMapData, setHasMapData] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -69,7 +70,9 @@ export default function Home() {
   };
 
   const latestData = flightData[flightData.length - 1] || defaultData;
-  const hasMapData = latestData.latitude !== 0 && latestData.longitude !== 0;
+
+  // Check if there's location data in the latest flight data
+  const hasLocationData = latestData.latitude !== 0 && latestData.longitude !== 0;
 
   return (
     <>
@@ -81,7 +84,13 @@ export default function Home() {
         timeToGo={latestData.timeToGo}
         flightData={flightData}
       />
-      {hasMapData && <MapBackground flightData={flightData} />}
+      {hasLocationData && 
+        <MapBackground 
+          flightData={flightData} 
+          hasMapData={hasMapData} 
+          setHasMapData={setHasMapData} 
+        />
+      }
       <main className={`container mx-auto p-4 space-y-4 transition-all duration-700 ${hasMapData ? 'pt-[75vh]' : 'pt-24'}`}>
         <div className={`${hasMapData ? 'rounded-lg' : ''}`}>
           <div className="container mx-auto space-y-4 p-4">

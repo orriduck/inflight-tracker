@@ -6,6 +6,8 @@ import { FlightData } from '@/types/flight';
 
 interface MapBackgroundProps {
   flightData: FlightData[];
+  hasMapData: boolean;
+  setHasMapData: (value: boolean) => void;
 }
 
 interface ViewportState {
@@ -16,13 +18,35 @@ interface ViewportState {
   pitch?: number;
 }
 
-const MapBackground = ({ flightData }: MapBackgroundProps) => {
+const MapBackground = ({ flightData, hasMapData, setHasMapData }: MapBackgroundProps) => {
   const [viewport, setViewport] = useState<ViewportState>({
     latitude: 0,
     longitude: 0,
     zoom: 5
   });
   const mapRef = useRef<any>(null);
+
+  // Check if OpenStreetMap tiles are available
+  useEffect(() => {
+    const checkMapTileAvailability = async () => {
+      try {
+        // Try to fetch a test tile from OpenStreetMap
+        const testTileUrl = 'https://tile.openstreetmap.org/0/0/0.png';
+        const response = await fetch(testTileUrl, { method: 'HEAD' });
+        
+        if (response.ok) {
+          setHasMapData(true);
+        } else {
+          setHasMapData(false);
+        }
+      } catch (error) {
+        console.error('Failed to check map tile availability:', error);
+        setHasMapData(false);
+      }
+    };
+    
+    checkMapTileAvailability();
+  }, [setHasMapData]);
 
   useEffect(() => {
     if (flightData.length > 0) {
@@ -95,6 +119,11 @@ const MapBackground = ({ flightData }: MapBackgroundProps) => {
     ]
   };
 
+  // Don't render the map if hasMapData is false
+  if (!hasMapData) {
+    return null;
+  }
+
   return (
     <div className="fixed inset-0 -z-10 bg-background/50 backdrop-blur-sm">
       <div className="w-full h-full transition-all duration-1000 ease-out">
@@ -110,6 +139,7 @@ const MapBackground = ({ flightData }: MapBackgroundProps) => {
           doubleClickZoom={false}
           touchZoomRotate={false}
           keyboard={false}
+          onError={() => setHasMapData(false)}
         >
           <Source type="geojson" data={routeData}>
             <Layer

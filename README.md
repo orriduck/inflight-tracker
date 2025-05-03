@@ -10,6 +10,8 @@ InFlight Tracker is a web application designed to display real-time flight infor
 ## Features
 - Real-time flight tracking with map visualization using inflight-wifi
     - Map will be only available if the inflight-Wifi is actually able to reach internet
+    - The app dynamically checks OpenStreetMap tile availability to determine if map can be displayed
+    - UI adapts based on whether map data is accessible or not
 - Flight metrics display (airspeed, altitude, temperature, etc.)
 - Progress charts for flight parameters
 - Navigation information (origin, destination, flight number)
