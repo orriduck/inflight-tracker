@@ -149,20 +149,20 @@ export default function FlightMetrics({ data, loading }: FlightMetricsProps) {
               <div className="font-bold">
                 {metric.isCoordinate ? (
                   <div className="flex items-baseline">
-                    <div className="font-metric">
+                    <div>
                       <Counter
                         value={metric.wholeValue}
-                        fontSize={28}
+                        fontSize={24}
                         places={metric.wholePlaces}
                         gap={1}
                         borderRadius={4}
                       />
                     </div>
                     <span className="text-xl">.</span>
-                    <div className="font-metric">
+                    <div>
                       <Counter
                         value={metric.decimalValue}
-                        fontSize={20}
+                        fontSize={18}
                         places={metric.decimalPlaces}
                         gap={1}
                         borderRadius={4}
@@ -174,10 +174,10 @@ export default function FlightMetrics({ data, loading }: FlightMetricsProps) {
                   </div>
                 ) : (
                   <div className="flex items-baseline">
-                    <div className="font-metric">
+                    <div>
                       <Counter
                         value={metric.value}
-                        fontSize={28}
+                        fontSize={24}
                         places={metric.places}
                         gap={1}
                         borderRadius={4}
