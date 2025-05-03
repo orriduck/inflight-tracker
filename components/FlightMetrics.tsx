@@ -1,14 +1,15 @@
 "use client";
 
-import { FlightData } from "@/types/flight-data";
+import { FlightData } from "@/types/flight";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Rocket, Ruler, Clock, Wind, Thermometer, PlaneLanding } from "lucide-react";
+import { Rocket, Ruler, Clock, Wind, Thermometer, PlaneLanding, Compass } from "lucide-react";
 import { useEffect, useState } from "react";
+import { feetToMeters, knotsToKmh, getCompassDirection } from "@/lib/utils";
 
 interface FlightMetricsProps {
   data: FlightData;
@@ -16,7 +17,7 @@ interface FlightMetricsProps {
 
 export default function FlightMetrics({ data }: FlightMetricsProps) {
   const [columns, setColumns] = useState(3);
-  
+
   // Update columns based on screen size
   useEffect(() => {
     const handleResize = () => {
@@ -28,7 +29,6 @@ export default function FlightMetrics({ data }: FlightMetricsProps) {
         setColumns(3);
       }
     };
-    
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
@@ -38,48 +38,46 @@ export default function FlightMetrics({ data }: FlightMetricsProps) {
     {
       title: "Ground Speed",
       value: data.groundspeed,
-      unit: "mph",
+      unit: "knots",
+      secondaryValue: knotsToKmh(data.groundspeed),
+      secondaryUnit: "km/h",
       icon: <Rocket className="h-5 w-5" />,
     },
     {
       title: "Altitude",
       value: data.altitude,
       unit: "ft",
+      secondaryValue: feetToMeters(data.altitude),
+      secondaryUnit: "m",
       icon: <PlaneLanding className="h-5 w-5" />,
     },
     {
-      title: "Flight Time",
-      value: Math.round(data.flightDuration / 60),
-      unit: "h",
-      icon: <Clock className="h-5 w-5" />,
+      title: "Heading",
+      value: data.heading,
+      unit: "°",
+      secondaryValue: getCompassDirection(data.heading),
+      secondaryUnit: "",
+      icon: <Compass className="h-5 w-5" />,
     },
     {
-      title: "Distance To Go",
-      value: data.distanceToGo,
-      unit: "mi",
+      title: "Longitude",
+      value: data.longitude.toFixed(3),
+      unit: "",
       icon: <Ruler className="h-5 w-5" />,
     },
+    {
+      title: "Latitude",
+      value: data.latitude.toFixed(3),
+      unit: "",
+      icon: <Ruler className="h-5 w-5" />,
+    },
+    {
+      title: "Flight Phase",
+      value: data.flightPhase,
+      unit: "",
+      icon: <PlaneLanding className="h-5 w-5" />,
+    },
   ];
-
-  // Only add temperature if available
-  if (data.airTemperature) {
-    metrics.push({
-      title: "Air Temperature",
-      value: data.airTemperature,
-      unit: "°C",
-      icon: <Thermometer className="h-5 w-5" />,
-    });
-  }
-
-  // Only add wind if available
-  if (data.windSpeed && data.windDirection) {
-    metrics.push({
-      title: "Wind",
-      value: data.windSpeed,
-      unit: `mph ${data.windDirection}°`,
-      icon: <Wind className="h-5 w-5" />,
-    });
-  }
 
   // Helper function to determine if a border should be applied
   const shouldHaveBorderRight = (index: number) => {
@@ -100,7 +98,7 @@ export default function FlightMetrics({ data }: FlightMetricsProps) {
           {metrics.map((metric, index) => (
             <div 
               key={metric.title} 
-              className={`p-4 ${shouldHaveBorderRight(index) ? "border-r" : ""} ${shouldHaveBorderBottom(index) ? "border-b" : ""}`}
+              className="p-4"
             >
               <div className="flex items-center gap-2 mb-2">
                 {metric.icon}
@@ -109,6 +107,11 @@ export default function FlightMetrics({ data }: FlightMetricsProps) {
               <div className="text-2xl font-bold">
                 {metric.value}
                 <span className="text-sm font-normal ml-1">{metric.unit}</span>
+                {metric.secondaryValue && (
+                  <div className="text-sm font-normal text-muted-foreground mt-1">
+                    ({metric.secondaryValue}{metric.secondaryUnit})
+                  </div>
+                )}
               </div>
             </div>
           ))}

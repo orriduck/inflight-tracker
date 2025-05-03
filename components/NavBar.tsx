@@ -46,7 +46,6 @@ export default function NavBar({
           {/* FROM */}
           <div className="flex flex-col items-start justify-center min-w-[70px]">
             <span className="text-2xl font-extrabold leading-none">{from || 'N/A'}</span>
-            <span className="text-xs text-primary-foreground/70 -mt-1">{}</span>
           </div>
 
           {/* Progress Bar Section */}
@@ -54,7 +53,6 @@ export default function NavBar({
             <div className="flex items-center justify-between w-full">
               <span className="text-xs text-primary-foreground/80 font-mono">{flightNumber || 'N/A'}</span>
               <span className="text-sm text-primary-foreground/90 font-semibold">{formatDuration(flightDuration)}</span>
-              <span className="text-xs text-primary-foreground/80">{}</span>
             </div>
             <div className="relative w-full h-3 mt-1 flex items-center">
               <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-primary-foreground/20 rounded-full" />
@@ -72,7 +70,6 @@ export default function NavBar({
           {/* TO */}
           <div className="flex flex-col items-end justify-center min-w-[70px]">
             <span className="text-2xl font-extrabold leading-none">{to || 'N/A'}</span>
-            <span className="text-xs text-primary-foreground/70 -mt-1">{}</span>
           </div>
 
           {/* Export Button */}
@@ -89,11 +86,7 @@ export default function NavBar({
             <Download size={16} />
             Export GPX
           </button>
-
-          {/* Wifi Indicator */}
-          <div className="ml-4">
-            <WifiIndicator />
-          </div>
+          <WifiIndicator />
         </div>
       </div>
     </nav>

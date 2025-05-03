@@ -6,6 +6,7 @@ import { FlightData } from '@/types/flight';
 import NavBar from '@/components/NavBar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import FlightMetrics from '@/components/FlightMetrics';
 
 export default function Home() {
   const [flightData, setFlightData] = useState<FlightData[]>([]);
@@ -59,35 +60,9 @@ export default function Home() {
         timeToGo={latestData?.timeToGo}
         flightData={flightData}
       />
-      <main className="container mx-auto p-4 space-y-4 pt-20">
+      <main className="container mx-auto p-4 space-y-4 pt-24">
         {/* Flight Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Altitude</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">{latestData?.altitude || 0} ft</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Ground Speed</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">{latestData?.groundspeed || 0} knots</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Heading</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">{latestData?.heading || 0}°</p>
-            </CardContent>
-          </Card>
-        </div>
-
+        <FlightMetrics data={latestData} />
         {/* Chart */}
         <Card>
           <CardHeader>
