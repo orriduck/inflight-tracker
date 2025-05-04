@@ -82,7 +82,7 @@ export default function FlightMetrics({ data, loading }: FlightMetricsProps) {
       secondaryValue: feetToMeters(data.altitude),
       secondaryUnit: "m",
       icon: <PlaneLanding className="h-5 w-5" />,
-      places: [10000, 1000, 100, 10],
+      places: [10000, 1000, 100, 10, 1],
     },
     {
       title: "Heading",
@@ -94,13 +94,13 @@ export default function FlightMetrics({ data, loading }: FlightMetricsProps) {
       places: [100, 10, 1],
     },
     {
-      title: "Distance To Go",
+      title: "Distance To Next Routing Point",
       value: Math.floor(data.distanceToGo),
-      unit: "mi",
-      secondaryValue: (data.distanceToGo * 1.60934).toFixed(0),
+      unit: "nm",
+      secondaryValue: (data.distanceToGo * 1.852).toFixed(0),
       secondaryUnit: "km",
       icon: <Ruler className="h-5 w-5" />,
-      places: [10000, 1000, 100, 10, 1],
+      places: [1000, 100, 10, 1],
     },
     {
       title: "Latitude",
