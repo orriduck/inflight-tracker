@@ -43,6 +43,40 @@ InFlight Tracker is a web application designed to display real-time flight infor
    pnpm dev
    ```
 
+## Docker Deployment
+The application can be deployed using Docker. Here's how to build and run it:
+
+1. Build the Docker image:
+   ```bash
+   docker build -t inflight-tracker-web .
+   ```
+
+2. Run the container:
+   ```bash
+   docker run -p 3000:3000 inflight-tracker-web
+   ```
+
+The application will be available at `http://localhost:3000`.
+
+### Docker Compose (Optional)
+If you prefer using Docker Compose, create a `docker-compose.yml` file with the following content:
+
+```yaml
+version: '3.8'
+services:
+  web:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+```
+
+Then run:
+```bash
+docker-compose up
+```
+
 ## Features
 
 ### Data Persistence
@@ -58,7 +92,7 @@ The application now stores flight data in localStorage, allowing you to:
 
 ## Todo
 - ✅ Kept storing and resume the data when refreshing
-- Wrap up in docker or something to run
+- ✅ Wrap up in docker or something to run
 - Detect Inflight WIFI before running
 
 ## Screenshots
