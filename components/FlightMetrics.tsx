@@ -2,12 +2,7 @@
 
 import { FlightData } from "@/types/flight";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Rocket,
-  Ruler,
-  PlaneLanding,
-  Compass,
-} from "lucide-react";
+import { Rocket, Ruler, PlaneLanding, Compass } from "lucide-react";
 import { useEffect, useState } from "react";
 import { feetToMeters, knotsToKmh, getCompassDirection } from "@/lib/utils";
 import Counter from "@/components/ui/counter";
@@ -17,12 +12,12 @@ interface BaseMetric {
   title: string;
   icon: React.ReactNode;
   unit: string;
-  secondaryValue?: string | number;
+  secondaryValue?: string | number | null;
   secondaryUnit?: string;
 }
 
 interface StandardMetric extends BaseMetric {
-  value: number;
+  value: number | null;
   places: number[];
   isCoordinate?: false;
 }
@@ -82,18 +77,20 @@ export default function FlightMetrics({ data, loading }: FlightMetricsProps) {
     },
     {
       title: "Heading",
-      value: Math.abs(Math.floor(data.heading)),
+      value: data.heading ? Math.abs(Math.floor(data.heading)) : null,
       unit: "°",
-      secondaryValue: getCompassDirection(data.heading),
+      secondaryValue: data.heading ? getCompassDirection(data.heading) : null,
       secondaryUnit: "",
       icon: <Compass className="h-5 w-5" />,
       places: [100, 10, 1],
     },
     {
       title: "Distance To Next Routing Point",
-      value: Math.floor(data.distanceToGo),
+      value: data.distanceToGo ? Math.floor(data.distanceToGo) : null,
       unit: "nm",
-      secondaryValue: (data.distanceToGo * 1.852).toFixed(0),
+      secondaryValue: data.distanceToGo
+        ? (data.distanceToGo * 1.852).toFixed(0)
+        : null,
       secondaryUnit: "km",
       icon: <Ruler className="h-5 w-5" />,
       places: [1000, 100, 10, 1],
@@ -171,17 +168,23 @@ export default function FlightMetrics({ data, loading }: FlightMetricsProps) {
                 ) : (
                   <div className="flex items-baseline">
                     <div>
-                      <Counter
-                        value={metric.value}
-                        fontSize={24}
-                        places={metric.places}
-                        gap={1}
-                        borderRadius={4}
-                      />
+                      {metric.value ? (
+                        <>
+                          <Counter
+                            value={metric.value}
+                            fontSize={24}
+                            places={metric.places}
+                            gap={1}
+                            borderRadius={4}
+                          />
+                          <span className="text-sm ml-1 font-normal">
+                            {metric.unit}
+                          </span>
+                        </>
+                      ) : (
+                        <>Not Available</>
+                      )}
                     </div>
-                    <span className="text-sm ml-1 font-normal">
-                      {metric.unit}
-                    </span>
                   </div>
                 )}
                 {!loading && !!metric.secondaryValue && (

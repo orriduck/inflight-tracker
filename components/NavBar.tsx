@@ -122,8 +122,7 @@ export default function NavBar({
           {/* Dropdown Menu */}
           <DropdownMenu open={open} onOpenChange={setOpen}>
             <DropdownMenuTrigger asChild>
-              <Button 
-                variant="secondary" 
+              <Button  
                 size="icon"
               >
                 <MoreHorizontal />
