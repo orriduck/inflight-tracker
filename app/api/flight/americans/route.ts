@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { FlightData } from '@/types/flight';
+import { AAFlightData } from '@/types/flight';
 
 const API_URL = 'https://www.aainflight.com/api/v1/connectivity/viasat/flight';
 
@@ -17,7 +17,7 @@ export async function GET() {
     }
 
     const data = await response.json();
-    return NextResponse.json(data as FlightData);
+    return NextResponse.json(data as AAFlightData);
   } catch (error) {
     console.error('Error fetching flight data:', error);
     return NextResponse.json(

@@ -24,4 +24,7 @@ export interface FlightData {
   windSpeed: number | null;
   windDirection: number | null;
   flightPhase: string;
-} 
+}
+
+export interface AAFlightData extends FlightData {
+}

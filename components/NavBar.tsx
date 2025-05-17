@@ -1,8 +1,6 @@
-import { Download, RefreshCw, Trash, MoreHorizontal } from "lucide-react";
+import { Download, Trash, MoreHorizontal } from "lucide-react";
 import { convertToGPX, downloadGPX } from "@/utils/gpx";
 import { FlightData } from "@/types/flight";
-import WifiIndicator from "./WifiIndicator";
-import { cn } from "@/lib/utils";
 import { useFlightData } from "@/app/contexts/FlightDataContext";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -21,6 +19,7 @@ interface NavBarProps {
   flightDuration?: number; // in minutes
   timeToGo?: number; // in minutes
   flightData: FlightData[];
+  rightElement?: React.ReactNode;
 }
 
 function formatDuration(mins?: number) {
@@ -37,6 +36,7 @@ export default function NavBar({
   flightDuration,
   timeToGo,
   flightData = [],
+  rightElement,
 }: NavBarProps) {
   const { resetData } = useFlightData();
   const [open, setOpen] = useState(false);
@@ -112,6 +112,13 @@ export default function NavBar({
             </span>
           </div>
 
+          {/* Right Element */}
+          {rightElement && (
+            <div className="flex items-center">
+              {rightElement}
+            </div>
+          )}
+
           {/* Dropdown Menu */}
           <DropdownMenu open={open} onOpenChange={setOpen}>
             <DropdownMenuTrigger asChild>
@@ -142,13 +149,6 @@ export default function NavBar({
                 <Trash />
                 Reset Data
               </DropdownMenuItem>
-              
-              <DropdownMenuSeparator />
-              
-              <div className="px-2 py-1.5 flex items-center">
-                <span className="mr-2 text-sm">Connection:</span>
-                <WifiIndicator />
-              </div>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

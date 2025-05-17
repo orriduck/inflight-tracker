@@ -1,43 +1,50 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Wifi, WifiOff } from 'lucide-react';
+import { Wifi, WifiOff, HelpCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useFlightData } from '@/app/contexts/FlightDataContext';
 
 export default function WifiIndicator() {
-  const [isConnected, setIsConnected] = useState(false);
+  const { vendor } = useFlightData();
 
-  useEffect(() => {
-    const updateConnectionStatus = () => {
-      setIsConnected(navigator.onLine);
+  const getStatusInfo = () => {
+    if (vendor === undefined) {
+      return {
+        icon: HelpCircle,
+        className: "text-yellow-500",
+        title: "Checking connection...",
+        showGlow: false
+      };
+    }
+    if (vendor === null) {
+      return {
+        icon: WifiOff,
+        className: "text-red-500",
+        title: "No flight data connection available",
+        showGlow: false
+      };
+    }
+    return {
+      icon: Wifi,
+      className: "text-green-500",
+      title: `Connected to ${vendor} flight data`,
+      showGlow: true
     };
+  };
 
-    // Initial check
-    updateConnectionStatus();
-
-    // Listen for online/offline events for immediate status changes
-    window.addEventListener('online', updateConnectionStatus);
-    window.addEventListener('offline', updateConnectionStatus);
-    
-    // Set up polling to check status every second
-    const intervalId = setInterval(() => {
-      updateConnectionStatus();
-    }, 1000);
-
-    return () => {
-      window.removeEventListener('online', updateConnectionStatus);
-      window.removeEventListener('offline', updateConnectionStatus);
-      clearInterval(intervalId);
-    };
-  }, []);
+  const status = getStatusInfo();
+  const Icon = status.icon;
 
   return (
-    <div className="inline-flex items-center justify-center" title={isConnected ? 'Connected' : 'Disconnected'}>
-      {isConnected ? (
-        <Wifi className={cn("w-5 h-5 text-green-500", "animate-glow-green")} aria-hidden="true" />
-      ) : (
-        <WifiOff className="w-5 h-5 text-red-500" aria-hidden="true" />
-      )}
+    <div className="inline-flex items-center justify-center" title={status.title}>
+      <Icon 
+        className={cn(
+          "w-5 h-5",
+          status.className,
+          status.showGlow && "animate-glow-green"
+        )} 
+        aria-hidden="true" 
+      />
     </div>
   );
 }

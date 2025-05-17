@@ -46,6 +46,7 @@ interface FlightDataContextType {
   loading: boolean;
   error: string | null;
   hasLocationData: boolean;
+  vendor: string | null | undefined;
   resetData: () => void;
 }
 
@@ -61,20 +62,51 @@ const getFlightStorageKey = (flightNumber: string) =>
 const isValidFlightNumber = (flightNumber?: string | null): boolean =>
   typeof flightNumber === "string" && flightNumber.trim() !== "";
 
+// Helper to detect available vendor
+const detectVendor = async (): Promise<string | null> => {
+  const uris = Object.entries(config.flightInfoUri);
+
+  for (const [vendor, uri] of uris) {
+    try {
+      const response = await fetch(uri);
+      if (response.ok) {
+        return vendor;
+      }
+    } catch (err) {
+      console.warn(`Failed to connect to ${vendor} endpoint:`, err);
+    }
+  }
+  return null;
+};
+
 export function FlightDataProvider({ children }: { children: ReactNode }) {
   const [flightData, setFlightData] = useState<FlightData[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [currentFlightNumber, setCurrentFlightNumber] = useState<string | null>(
-    null,
-  );
+  const [currentFlightNumber, setCurrentFlightNumber] = useState<string | null>(null);
+  const [vendor, setVendor] = useState<string | null | undefined>(undefined);
 
-  // Load saved data when component mounts
+  // Detect vendor on component mount
   useEffect(() => {
+    const initializeVendor = async () => {
+      const detectedVendor = await detectVendor();
+      setVendor(detectedVendor);
+    };
+    initializeVendor();
+  }, []);
+
+  // Load saved data when component mounts and vendor is detected
+  useEffect(() => {
+    if (vendor === undefined) return; // Wait for vendor detection
+
     const fetchInitialData = async () => {
       try {
-        // First fetch to determine the flight number
-        const response = await fetch(config.apiUrl);
+        if (!vendor) {
+          throw new Error("No available flight data vendors");
+        }
+
+        // Fetch using detected vendor
+        const response = await fetch(config.flightInfoUri[vendor as keyof typeof config.flightInfoUri]);
         if (!response.ok) {
           throw new Error("Failed to fetch initial flight data");
         }
@@ -95,7 +127,6 @@ export function FlightDataProvider({ children }: { children: ReactNode }) {
               const parsedData = JSON.parse(savedData);
               if (Array.isArray(parsedData) && parsedData.length > 0) {
                 setFlightData([...parsedData, initialData]);
-                // Save the combined data back to localStorage
                 localStorage.setItem(
                   storageKey,
                   JSON.stringify([...parsedData, initialData]),
@@ -110,12 +141,10 @@ export function FlightDataProvider({ children }: { children: ReactNode }) {
               localStorage.setItem(storageKey, JSON.stringify([initialData]));
             }
           } else {
-            // No saved data found, just use the initial fetch
             setFlightData([initialData]);
             localStorage.setItem(storageKey, JSON.stringify([initialData]));
           }
         } else {
-          // No valid flight number, just use the initial data without localStorage
           console.log("No valid flight number found, not using localStorage");
           setFlightData([initialData]);
         }
@@ -129,13 +158,15 @@ export function FlightDataProvider({ children }: { children: ReactNode }) {
     };
 
     fetchInitialData();
-  }, []);
+  }, [vendor]);
 
   // Set up polling for ongoing data updates
   useEffect(() => {
+    if (!vendor) return; // Don't poll if no vendor is available
+
     const fetchData = async () => {
       try {
-        const response = await fetch(config.apiUrl);
+        const response = await fetch(config.flightInfoUri[vendor as keyof typeof config.flightInfoUri]);
         if (!response.ok) {
           throw new Error("Failed to fetch flight data");
         }
@@ -145,20 +176,17 @@ export function FlightDataProvider({ children }: { children: ReactNode }) {
 
         // Only use localStorage if we have a valid flight number
         if (isValidFlightNumber(flightNumber)) {
-          // If flight number changed, update the current flight number
           if (flightNumber !== currentFlightNumber) {
             setCurrentFlightNumber(flightNumber);
           }
 
           setFlightData((prevData) => {
             const newData = [...prevData, data];
-            // Save to localStorage with flight-specific key
             const storageKey = getFlightStorageKey(flightNumber);
             localStorage.setItem(storageKey, JSON.stringify(newData));
             return newData;
           });
         } else {
-          // Just update the state without localStorage
           setFlightData((prevData) => [...prevData, data]);
         }
 
@@ -168,12 +196,9 @@ export function FlightDataProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    // Set up polling
     const interval = setInterval(fetchData, config.pollingInterval);
-
-    // Cleanup
     return () => clearInterval(interval);
-  }, [currentFlightNumber]);
+  }, [vendor, currentFlightNumber]);
 
   const resetData = () => {
     if (currentFlightNumber && isValidFlightNumber(currentFlightNumber)) {
@@ -205,6 +230,7 @@ export function FlightDataProvider({ children }: { children: ReactNode }) {
         loading,
         error,
         hasLocationData,
+        vendor,
         resetData,
       }}
     >

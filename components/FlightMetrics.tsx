@@ -5,16 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Rocket,
   Ruler,
-  Clock,
-  Wind,
-  Thermometer,
   PlaneLanding,
   Compass,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { feetToMeters, knotsToKmh, getCompassDirection } from "@/lib/utils";
 import Counter from "@/components/ui/counter";
-import { LucideIcon } from "lucide-react";
 
 // Define interfaces for our metrics
 interface BaseMetric {
