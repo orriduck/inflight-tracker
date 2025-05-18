@@ -85,7 +85,7 @@ export default function FlightMetrics({ data, loading }: FlightMetricsProps) {
       places: [100, 10, 1],
     },
     {
-      title: "Distance To Next Routing Point",
+      title: "Distance To Go",
       value: data.distanceToGo ? Math.floor(data.distanceToGo) : null,
       unit: "nm",
       secondaryValue: data.distanceToGo
