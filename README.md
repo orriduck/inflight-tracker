@@ -96,5 +96,5 @@ The application now stores flight data in localStorage, allowing you to:
 - Detect Inflight WIFI before running
 
 ## Screenshots
-![image](https://github.com/user-attachments/assets/93456096-a840-4186-9c14-0fc2e0fe8375)
-![image](https://github.com/user-attachments/assets/b3ab87f6-b526-4836-8d47-05404ae0ab2b)
+![image](https://github.com/user-attachments/assets/9da6e9b7-187c-44e4-81a8-ac3c3a6012e2)
+![image](https://github.com/user-attachments/assets/a1a0fda2-5044-4e30-98de-1300a1ccda24)
