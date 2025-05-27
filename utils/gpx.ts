@@ -64,10 +64,14 @@ function interpolateFlightData(start: FlightData, end: FlightData, fraction: num
     longitude: interpolate(start.longitude, end.longitude, fraction),
     altitude: interpolate(start.altitude, end.altitude, fraction),
     groundspeed: interpolate(start.groundspeed, end.groundspeed, fraction),
-    heading: interpolate(start.heading, end.heading, fraction),
+    heading: start.heading !== null && end.heading !== null
+      ? interpolate(start.heading, end.heading, fraction)
+      : null,
     flightDuration: interpolate(start.flightDuration, end.flightDuration, fraction),
-    distanceToGo: interpolate(start.distanceToGo, end.distanceToGo, fraction),
-    timeToGo: interpolate(start.timeToGo, end.timeToGo, fraction),
+    distanceToGo: start.distanceToGo !== null && end.distanceToGo !== null
+      ? interpolate(start.distanceToGo, end.distanceToGo, fraction)
+      : null,
+    timeToGo: interpolate(start.timeToGo ?? 0, end.timeToGo ?? 0, fraction),
   };
 
   // For numeric values that might be null
@@ -176,7 +180,7 @@ export function processFlightData(flightData: FlightData[]): FlightData[] {
     const longitudes = processedData.map(d => d.longitude);
     const altitudes = processedData.map(d => d.altitude);
     const speeds = processedData.map(d => d.groundspeed);
-    const headings = processedData.map(d => d.heading);
+    const headings = processedData.map(d => d.heading ?? 0);
 
     smoothedData.push({
       ...current,
