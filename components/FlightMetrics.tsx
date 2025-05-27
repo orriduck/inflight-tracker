@@ -39,6 +39,9 @@ interface FlightMetricsProps {
 
 export default function FlightMetrics({ data, loading }: FlightMetricsProps) {
   const [, setColumns] = useState(3);
+  const distanceToGo = (data.distanceToGo !== null && data.distanceToGo !== undefined) 
+    ? Math.floor(data.distanceToGo) 
+    : null
 
   // Update columns based on screen size
   useEffect(() => {
@@ -86,10 +89,10 @@ export default function FlightMetrics({ data, loading }: FlightMetricsProps) {
     },
     {
       title: "Distance To Go",
-      value: data.distanceToGo ? Math.floor(data.distanceToGo) : null,
+      value: distanceToGo,
       unit: "nm",
-      secondaryValue: data.distanceToGo
-        ? (data.distanceToGo * 1.852).toFixed(0)
+      secondaryValue: distanceToGo
+        ? (distanceToGo * 1.852).toFixed(0)
         : null,
       secondaryUnit: "km",
       icon: <Ruler className="h-5 w-5" />,
@@ -159,7 +162,7 @@ export default function FlightMetrics({ data, loading }: FlightMetricsProps) {
                 ) : (
                   <div className="flex items-baseline">
                     <div>
-                      {metric.value ? (
+                      {metric.value !== undefined && metric.value !== null ? (
                         <>
                           <Counter
                             value={metric.value}
@@ -173,7 +176,7 @@ export default function FlightMetrics({ data, loading }: FlightMetricsProps) {
                           </span>
                         </>
                       ) : (
-                        <>Not Available</>
+                        <>Not Available ({metric.value})</>
                       )}
                     </div>
                   </div>
