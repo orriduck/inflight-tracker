@@ -23,7 +23,8 @@ interface NavBarProps {
 }
 
 function formatDuration(mins?: number) {
-  if (typeof mins !== "number" || isNaN(mins) || mins < 0) return "N/A";
+  if (typeof mins !== "number" || isNaN(mins)) return "N/A";
+  mins = Math.max(0, mins);
   const h = Math.floor(mins / 60);
   const m = mins % 60;
   return `${h > 0 ? `${h} hr ` : ""}${m} min`;
