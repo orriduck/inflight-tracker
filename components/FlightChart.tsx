@@ -5,7 +5,6 @@ import { FlightData } from "@/types/flight"
 import {
   Card,
   CardContent,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
@@ -23,17 +22,30 @@ export default function FlightChart({ flightData }: FlightChartProps) {
     heading: entry.heading,
   }))
 
+  interface TooltipPayload {
+    altitude: number;
+    groundspeed: number;
+    heading: number | null;
+  }
+
+  interface CustomTooltipProps {
+    active?: boolean;
+    payload?: { payload: TooltipPayload }[];
+    label?: string;
+  }
+
   // Custom tooltip component
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
-      const { altitude, groundspeed, heading } = payload[0].payload
-      
+      const dataPayload = payload[0].payload;
+      const displayHeading = dataPayload.heading !== null ? Math.abs(dataPayload.heading) : 0;
+
       return (
         <div className="bg-background border border-border p-2 rounded-md shadow-sm">
           <p className="font-medium">{label}</p>
-          <p className="text-sm">Altitude: {altitude} ft</p>
-          <p className="text-sm">Ground Speed: {groundspeed} kts</p>
-          <p className="text-sm">Heading: {heading}°</p>
+          <p className="text-sm">Altitude: {dataPayload.altitude} ft</p>
+          <p className="text-sm">Ground Speed: {dataPayload.groundspeed} kts</p>
+          <p className="text-sm">Heading: {dataPayload.heading}°</p>
           <div className="flex justify-center mt-1">
             <svg width="20" height="20" viewBox="0 0 20 20">
               <circle cx="10" cy="10" r="6" fill="hsl(var(--chart-1))" />
@@ -44,21 +56,35 @@ export default function FlightChart({ flightData }: FlightChartProps) {
                 y2="4"
                 stroke="white"
                 strokeWidth="1.5"
-                transform={`rotate(${Math.abs(heading)} 10 10)`}
+                transform={`rotate(${displayHeading} 10 10)`}
               />
             </svg>
           </div>
         </div>
-      )
+      );
     }
-    return null
+    return null;
+  };
+
+  interface CustomDotProps {
+    cx?: number;
+    cy?: number;
+    payload?: { heading: number | null };
+    index?: number;
   }
 
   // Custom dot with directional indicator
-  const CustomDot = (props: any) => {
-    const { cx, cy, payload, index } = props
-    if (index % 2 !== 0) return null // Only show every other dot for cleaner look
-    
+  const CustomDot = (props: CustomDotProps) => {
+    const { cx, cy, payload, index } = props;
+
+    if (cx === undefined || cy === undefined || !payload || index === undefined) {
+      return null;
+    }
+
+    if (index % 2 !== 0) return null; // Only show every other dot for cleaner look
+
+    const displayHeading = payload.heading !== null ? Math.abs(payload.heading) : 0;
+
     return (
       <g>
         <circle cx={cx} cy={cy} r="4" fill="hsl(var(--chart-1))" />
@@ -69,11 +95,11 @@ export default function FlightChart({ flightData }: FlightChartProps) {
           y2={cy - 6}
           stroke="hsl(var(--chart-1))"
           strokeWidth="1.5"
-          transform={`rotate(${Math.abs(payload.heading)} ${cx} ${cy})`}
+          transform={`rotate(${displayHeading} ${cx} ${cy})`}
         />
       </g>
-    )
-  }
+    );
+  };
 
   return (
     <Card>

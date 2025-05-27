@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { Map, Source, Layer } from 'react-map-gl/maplibre';
+import { Map, Source, Layer, type MapRef } from 'react-map-gl/maplibre';
 import type { Feature, LineString, Point } from 'geojson';
 import type { StyleSpecification } from 'maplibre-gl';
 import { FlightData } from '@/types/flight';
@@ -24,7 +24,7 @@ const MapBackground = ({ flightData, hasMapData, setHasMapData }: MapBackgroundP
     longitude: 0,
     zoom: 5
   });
-  const mapRef = useRef<any>(null);
+  const mapRef = useRef<MapRef>(null);
 
   // Check if OpenStreetMap tiles are available
   useEffect(() => {
@@ -35,12 +35,13 @@ const MapBackground = ({ flightData, hasMapData, setHasMapData }: MapBackgroundP
         setHasMapData(true);
       })
       .catch((error) => {
+        console.error("Failed to check map tile availability:", error);
         setHasMapData(false);
       })
     }
     
     checkMapTileAvailability();
-  }, []);
+  }, [setHasMapData]);
 
   useEffect(() => {
     if (flightData.length > 0) {

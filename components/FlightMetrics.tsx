@@ -38,7 +38,7 @@ interface FlightMetricsProps {
 }
 
 export default function FlightMetrics({ data, loading }: FlightMetricsProps) {
-  const [columns, setColumns] = useState(3);
+  const [, setColumns] = useState(3);
 
   // Update columns based on screen size
   useEffect(() => {
@@ -117,15 +117,6 @@ export default function FlightMetrics({ data, loading }: FlightMetricsProps) {
     },
   ];
 
-  // Helper function to determine if a border should be applied
-  const shouldHaveBorderRight = (index: number) => {
-    return (index + 1) % columns !== 0 && index !== metrics.length - 1;
-  };
-
-  const shouldHaveBorderBottom = (index: number) => {
-    return index < metrics.length - columns;
-  };
-
   return (
     <Card>
       <CardHeader className="py-2">
@@ -133,7 +124,7 @@ export default function FlightMetrics({ data, loading }: FlightMetricsProps) {
       </CardHeader>
       <CardContent>
         <div className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4`}>
-          {metrics.map((metric, index) => (
+          {metrics.map((metric) => (
             <div key={metric.title} className="rounded-lg">
               <div className="flex items-center gap-2 mb-2">
                 {metric.icon}
