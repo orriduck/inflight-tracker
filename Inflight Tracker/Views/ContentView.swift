@@ -9,11 +9,13 @@ struct ContentView: View {
 
     var body: some View {
         ZStack(alignment: .topLeading) {
-            Map(
-                coordinateRegion: $locationManager.region,
-                interactionModes: .all,
-                showsUserLocation: true
-            )
+            Map(position: $locationManager.position) {
+                // UserLocation will be shown automatically when position is set
+            }
+            .mapControls {
+                MapUserLocationButton()
+            }
+            .mapStyle(.standard)
             .ignoresSafeArea()
 
             VStack(alignment: .leading) {
