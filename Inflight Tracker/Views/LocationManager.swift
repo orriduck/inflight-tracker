@@ -10,6 +10,7 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     ))
 
     private let manager = CLLocationManager()
+    private var lastKnownLocation: CLLocationCoordinate2D? = nil
 
     override init() {
         super.init()
@@ -20,12 +21,33 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         manager.startUpdatingHeading()
     }
 
+    func requestLocation() {
+        manager.requestLocation()
+    }
+
+    func centerOnUser() {
+        if let coordinate = lastKnownLocation {
+            let newRegion = MKCoordinateRegion(
+                center: coordinate,
+                span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+            )
+            position = .region(newRegion)
+        } else {
+            requestLocation()
+        }
+    }
+
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
+        lastKnownLocation = location.coordinate
         let newRegion = MKCoordinateRegion(
             center: location.coordinate,
             span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
         )
         position = .region(newRegion)
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        print("Location manager failed with error: \(error.localizedDescription)")
     }
 } 

@@ -4,6 +4,7 @@ import MapKit
 struct ContentView: View {
     @StateObject private var locationManager = LocationManager()
     @State private var panelOffset: CGFloat = 0
+    @State private var hasMapBeenInteracted: Bool = false
     let collapsedHeight: CGFloat = 140 // Enough for handle + PlaneInfoCard
     let expandedHeight: CGFloat = 400  // Enough for all content
 
@@ -12,11 +13,16 @@ struct ContentView: View {
             Map(position: $locationManager.position) {
                 // UserLocation will be shown automatically when position is set
             }
-            .mapControls {
-                MapUserLocationButton()
-            }
             .mapStyle(.standard)
             .ignoresSafeArea()
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { _ in
+                        if !hasMapBeenInteracted {
+                            hasMapBeenInteracted = true
+                        }
+                    }
+            )
 
             VStack(alignment: .leading) {
                 WifiIndicator()
@@ -24,57 +30,19 @@ struct ContentView: View {
             }
             .padding([.top, .leading], 16)
 
-            // Pull-up panel
-            BottomPanel(
+            // Floating panel with integrated location button
+            FloatingPanel(
                 collapsedHeight: collapsedHeight,
                 expandedHeight: expandedHeight,
-                panelOffset: $panelOffset
+                panelOffset: $panelOffset,
+                locationManager: locationManager,
+                hasMapBeenInteracted: hasMapBeenInteracted,
+                onLocationButtonTapped: {
+                    hasMapBeenInteracted = false
+                }
             ) {
                 PanelContent()
             }
-        }
-    }
-}
-
-struct BottomPanel<Content: View>: View {
-    let collapsedHeight: CGFloat
-    let expandedHeight: CGFloat
-    @Binding var panelOffset: CGFloat
-    let content: () -> Content
-
-    @GestureState private var dragOffset: CGFloat = 0
-
-    var body: some View {
-        let totalOffset = max(panelOffset + dragOffset, 0)
-        VStack {
-            Spacer()
-            content()
-                .frame(maxWidth: .infinity)
-                .frame(height: expandedHeight)
-                .background(.ultraThinMaterial)
-                .cornerRadius(16)
-                .offset(y: totalOffset)
-                .gesture(
-                    DragGesture()
-                        .updating($dragOffset) { value, state, _ in
-                            state = value.translation.height
-                        }
-                        .onEnded { value in
-                            let newOffset = panelOffset + value.translation.height
-                            // Snap to collapsed or expanded
-                            if newOffset > (expandedHeight - collapsedHeight) / 2 {
-                                panelOffset = expandedHeight - collapsedHeight // collapsed
-                            } else {
-                                panelOffset = 0 // expanded
-                            }
-                        }
-                )
-                .animation(.spring(), value: totalOffset)
-        }
-        .ignoresSafeArea(edges: .bottom)
-        .onAppear {
-            // Start in collapsed state
-            panelOffset = expandedHeight - collapsedHeight
         }
     }
 }

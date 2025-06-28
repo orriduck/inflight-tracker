@@ -104,6 +104,7 @@ struct PlaneInfoCard: View {
             }
             ProgressView(value: progress)
                 .progressViewStyle(.linear)
+                .animation(.easeOut, value: progress)
             HStack {
                 Text("Elapsed: \(Int(planeInfo.elapsed)) min")
                     .font(.caption)
