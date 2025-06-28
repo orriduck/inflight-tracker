@@ -26,6 +26,7 @@ struct PanelContent: View {
     @State private var metrics: FlightMetrics = .mock
     @State private var planeInfo: PlaneInfo = .mock
     @Namespace private var animation
+    @State private var randomizer: Int = 0 // Used to force view update
 
     private var metricItems: [(label: String, value: Double?, unit: String, key: String)] {
         [
@@ -46,24 +47,31 @@ struct PanelContent: View {
     var body: some View {
         VStack(spacing: 12) {
             Capsule()
-                .frame(width: 40, height: 6)
-                .foregroundColor(.gray.opacity(0.4))
-                .padding(.top, 8)
+                .frame(width: 48, height: 8)
+                .foregroundColor(Color(.systemGray3))
+                .padding(.top, 16)
+                .shadow(color: .black.opacity(0.08), radius: 2, x: 0, y: 1)
+
+            Capsule()
+                .frame(width: 48, height: 8)
+                .padding(.top, 16)
+                .shadow(color: .black.opacity(0.08), radius: 2, x: 0, y: 1)
 
             PlaneInfoCard(planeInfo: planeInfo)
                 .padding(.horizontal)
 
             Button("Randomize Flight Data") {
-                withAnimation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.5)) {
-                    metrics = .random
-                    planeInfo = .random
+                withAnimation(.spring(response: 0.45, dampingFraction: 0.65, blendDuration: 0.5)) {
+                    metrics = RandomFlightData.randomMetrics()
+                    planeInfo = RandomFlightData.randomPlaneInfo()
+                    randomizer += 1 // Force view update even if values are the same
                 }
             }
             .padding(.bottom, 4)
 
             LazyVGrid(columns: columns, spacing: 12) {
-                ForEach(Array(metricItems.enumerated()), id: \._.offset) { idx, item in
-                    MetricCard(label: item.label, value: item.value, unit: item.unit, idKey: item.key, animation: animation)
+                ForEach(Array(metricItems.enumerated()), id: \.offset) { _, item in
+                    MetricCard(label: item.label, value: item.value, unit: item.unit, idKey: item.key, animation: animation, randomizer: randomizer)
                 }
             }
             .padding(.horizontal)
@@ -120,31 +128,19 @@ struct MetricCard: View {
     let unit: String
     let idKey: String
     var animation: Namespace.ID
+    var randomizer: Int // Used to force transition
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(label)
                 .font(.caption)
                 .foregroundColor(.secondary)
-            ZStack {
-                if let value = value {
-                    Text(String(format: "%.2f", value) + (unit.isEmpty ? "" : " \(unit)"))
-                        .font(.title3)
-                        .fontWeight(.bold)
-                        .foregroundColor(.primary)
-                        .id("value-\(idKey)-\(value)")
-                        .transition(.move(edge: .bottom))
-                        .matchedGeometryEffect(id: "value-\(idKey)", in: animation)
-                } else {
-                    Text("N/A")
-                        .font(.title3)
-                        .fontWeight(.bold)
-                        .foregroundColor(.secondary)
-                        .id("value-\(idKey)-na")
-                        .transition(.move(edge: .bottom))
-                        .matchedGeometryEffect(id: "value-\(idKey)", in: animation)
-                }
-            }
+            AnimatedNumberText(
+                value: value,
+                unit: unit,
+                idKey: idKey,
+                randomizer: randomizer
+            )
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -168,7 +164,7 @@ extension PlaneInfo {
         origin: ["LAX", "JFK", "SFO", "ORD", "ATL", "DFW"].randomElement()!,
         destination: ["LHR", "CDG", "NRT", "DXB", "SYD", "JFK"].randomElement()!,
         elapsed: Double(Int.random(in: 0...400)),
-        total: Double(Int.random(in: 200...500))
+        total: Double(Int.random(in: 400...500))
     )
 }
 
