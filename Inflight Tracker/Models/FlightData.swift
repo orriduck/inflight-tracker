@@ -1,6 +1,6 @@
 import Foundation
 
-struct FlightData: Codable {
+struct FlightData: Codable, Equatable {
     let timestamp: String
     let eta: String?
     let flightDuration: Double
@@ -26,4 +26,4 @@ struct FlightData: Codable {
     let windSpeed: Double?
     let windDirection: Double?
     let flightPhase: String
-} 
+}

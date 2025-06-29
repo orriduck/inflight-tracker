@@ -1,34 +1,18 @@
 import SwiftUI
 
-protocol PanelContentDataSource {
-    var metrics: FlightMetrics { get }
-    var planeInfo: PlaneInfo { get }
-}
-
-struct PlaneInfo {
-    var flightNumber: String
-    var origin: String
-    var destination: String
-    var elapsed: Double // minutes
-    var total: Double   // minutes
-}
-
-struct FlightMetrics {
-    var groundspeed: Double? // knots
-    var altitude: Double?    // feet
-    var heading: Double?     // degrees
-    var distanceToGo: Double? // nautical miles
-    var longitude: Double?
-    var latitude: Double?
-}
-
-private let initialRandomFlightData = RandomFlightData.randomFlightData()
-
-struct PanelContent: View {
-    @State private var metrics: FlightMetrics = FlightDataMapper.toFlightMetrics(from: initialRandomFlightData)
-    @State private var planeInfo: PlaneInfo = FlightDataMapper.toPlaneInfo(from: initialRandomFlightData)
+struct FlightMetricsView: View {
+    let flightData: FlightData
+    
     @Namespace private var animation
     @State private var randomizer: Int = 0 // Used to force view update
+    
+    private var metrics: FlightMetrics {
+        FlightMetrics.fromFlightData(flightData)
+    }
+    
+    private var planeInfo: PlaneInfo {
+        PlaneInfo.fromFlightData(flightData)
+    }
 
     private var metricItems: [(label: String, value: Double?, unit: String, key: String)] {
         [
@@ -47,30 +31,15 @@ struct PanelContent: View {
     ]
 
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 8) {
             Capsule()
                 .frame(width: 48, height: 8)
                 .foregroundColor(Color(.systemGray3))
                 .padding(.top, 16)
                 .shadow(color: .black.opacity(0.08), radius: 2, x: 0, y: 1)
 
-            Capsule()
-                .frame(width: 48, height: 8)
-                .padding(.top, 16)
-                .shadow(color: .black.opacity(0.08), radius: 2, x: 0, y: 1)
-
             PlaneInfoCard(planeInfo: planeInfo)
                 .padding(.horizontal)
-
-            Button("Randomize Flight Data") {
-                withAnimation(.spring(response: 0.45, dampingFraction: 0.65, blendDuration: 0.5)) {
-                    let randomData = RandomFlightData.randomFlightData()
-                    metrics = FlightDataMapper.toFlightMetrics(from: randomData)
-                    planeInfo = FlightDataMapper.toPlaneInfo(from: randomData)
-                    randomizer += 1 // Force view update even if values are the same
-                }
-            }
-            .padding(.bottom, 4)
 
             LazyVGrid(columns: columns, spacing: 12) {
                 ForEach(Array(metricItems.enumerated()), id: \.offset) { _, item in
@@ -78,7 +47,6 @@ struct PanelContent: View {
                 }
             }
             .padding(.horizontal)
-            .padding(.bottom, 8)
         }
     }
 }
@@ -92,7 +60,7 @@ struct PlaneInfoCard: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading) {
             Text("Flight \(planeInfo.flightNumber)")
                 .font(.title3)
                 .fontWeight(.bold)
@@ -155,5 +123,7 @@ struct MetricCard: View {
 }
 
 #Preview {
-    PanelContent()
+    FlightMetricsView(
+        flightData: RandomFlightData.randomFlightData()
+    )
 } 
