@@ -10,19 +10,19 @@ struct ContentView: View {
 
     var body: some View {
         ZStack(alignment: .topLeading) {
-            Map(position: $locationManager.position) {
-                // UserLocation will be shown automatically when position is set
-            }
-            .mapStyle(.standard)
-            .ignoresSafeArea()
-            .simultaneousGesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged { _ in
-                        if !hasMapBeenInteracted {
-                            hasMapBeenInteracted = true
+            Map(coordinateRegion: locationManager.binding, showsUserLocation: true)
+                .ignoresSafeArea()
+                .onAppear {
+                    locationManager.requestLocationPermission()
+                }
+                .simultaneousGesture(
+                    DragGesture(minimumDistance: 0)
+                        .onChanged { _ in
+                            if !hasMapBeenInteracted {
+                                hasMapBeenInteracted = true
+                            }
                         }
-                    }
-            )
+                )
 
             VStack(alignment: .leading) {
                 WifiIndicator()

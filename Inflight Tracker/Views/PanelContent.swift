@@ -22,9 +22,11 @@ struct FlightMetrics {
     var latitude: Double?
 }
 
+private let initialRandomFlightData = RandomFlightData.randomFlightData()
+
 struct PanelContent: View {
-    @State private var metrics: FlightMetrics = .mock
-    @State private var planeInfo: PlaneInfo = .mock
+    @State private var metrics: FlightMetrics = FlightDataMapper.toFlightMetrics(from: initialRandomFlightData)
+    @State private var planeInfo: PlaneInfo = FlightDataMapper.toPlaneInfo(from: initialRandomFlightData)
     @Namespace private var animation
     @State private var randomizer: Int = 0 // Used to force view update
 
@@ -62,8 +64,9 @@ struct PanelContent: View {
 
             Button("Randomize Flight Data") {
                 withAnimation(.spring(response: 0.45, dampingFraction: 0.65, blendDuration: 0.5)) {
-                    metrics = RandomFlightData.randomMetrics()
-                    planeInfo = RandomFlightData.randomPlaneInfo()
+                    let randomData = RandomFlightData.randomFlightData()
+                    metrics = FlightDataMapper.toFlightMetrics(from: randomData)
+                    planeInfo = FlightDataMapper.toPlaneInfo(from: randomData)
                     randomizer += 1 // Force view update even if values are the same
                 }
             }
@@ -149,43 +152,6 @@ struct MetricCard: View {
         .cornerRadius(12)
         .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
     }
-}
-
-// Mock & random data for preview/testing
-extension PlaneInfo {
-    static let mock = PlaneInfo(
-        flightNumber: "AA123",
-        origin: "LAX",
-        destination: "JFK",
-        elapsed: 120,
-        total: 300
-    )
-    static let random: PlaneInfo = PlaneInfo(
-        flightNumber: ["AA123", "DL456", "UA789", "BA100", "AF222"].randomElement()!,
-        origin: ["LAX", "JFK", "SFO", "ORD", "ATL", "DFW"].randomElement()!,
-        destination: ["LHR", "CDG", "NRT", "DXB", "SYD", "JFK"].randomElement()!,
-        elapsed: Double(Int.random(in: 0...400)),
-        total: Double(Int.random(in: 400...500))
-    )
-}
-
-extension FlightMetrics {
-    static let mock = FlightMetrics(
-        groundspeed: 480,
-        altitude: 35000,
-        heading: 90,
-        distanceToGo: 1200,
-        longitude: -122.4194,
-        latitude: 37.7749
-    )
-    static let random = FlightMetrics(
-        groundspeed: Double.random(in: 300...600),
-        altitude: Double.random(in: 20000...41000),
-        heading: Double.random(in: 0...359),
-        distanceToGo: Double.random(in: 100...5000),
-        longitude: Double.random(in: -180...180),
-        latitude: Double.random(in: -90...90)
-    )
 }
 
 #Preview {
