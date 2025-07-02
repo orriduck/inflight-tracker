@@ -5,6 +5,39 @@ import * as cheerio from "cheerio";
 const API_URL = "http://www.flyfi.com/travel/ajax/notification.do";
 const SECONDARY_URL = "http://www.flyfi.com/travel/";
 
+/**
+ * Maps JetBlue flight data to the universal FlightData format
+ */
+function mapJetBlueToFlightData(jetBlueData: JetBlueFlightData): FlightData {
+  return {
+    timestamp: new Date().toISOString(),
+    eta: jetBlueData.flightETA,
+    flightDuration: jetBlueData.flightTotalDuration,
+    flightNumber: "", // Not available in JetBlueFlightData
+    latitude: 0, // Not available in JetBlueFlightData
+    longitude: 0, // Not available in JetBlueFlightData
+    noseId: "", // Not available in JetBlueFlightData
+    paState: null, // Not available in JetBlueFlightData
+    vehicleId: "", // Not available in JetBlueFlightData
+    destination: jetBlueData.destinationIATA ?? jetBlueData.destinationCity ?? "",
+    origin: jetBlueData.originIATA ?? jetBlueData.originCity ?? "",
+    flightId: "", // Not available in JetBlueFlightData
+    airspeed: null,
+    airTemperature: null,
+    altitude: jetBlueData.altitude ?? 0,
+    distanceToGo: null,
+    doorState: null,
+    groundspeed: jetBlueData.groundspeed ?? 0,
+    heading: null,
+    timeToGo: jetBlueData.timeToArrival ? parseInt(jetBlueData.timeToArrival) : 0,
+    wheelWeightState: "",
+    grossWeight: null,
+    windSpeed: null,
+    windDirection: null,
+    flightPhase: jetBlueData.flightStatusText ?? "",
+  };
+}
+
 export async function GET() {
   try {
     // Prepare form data
@@ -63,34 +96,8 @@ export async function GET() {
     jetBlueData.originCity = originCity || null;
     jetBlueData.destinationCity = destinationCity || null;
 
-    // Map JetBlueFlightData to FlightData (adjust as needed)
-    const flightData: FlightData = {
-      timestamp: new Date().toISOString(),
-      eta: jetBlueData.flightETA,
-      flightDuration: jetBlueData.flightTotalDuration,
-      flightNumber: "", // Not available in JetBlueFlightData
-      latitude: 0, // Not available in JetBlueFlightData
-      longitude: 0, // Not available in JetBlueFlightData
-      noseId: "", // Not available in JetBlueFlightData
-      paState: null, // Not available in JetBlueFlightData
-      vehicleId: "", // Not available in JetBlueFlightData
-      destination: jetBlueData.destinationIATA ?? jetBlueData.destinationCity ?? "",
-      origin: jetBlueData.originIATA ?? jetBlueData.originCity ?? "",
-      flightId: "", // Not available in JetBlueFlightData
-      airspeed: null,
-      airTemperature: null,
-      altitude: jetBlueData.altitude ?? 0,
-      distanceToGo: null,
-      doorState: null,
-      groundspeed: jetBlueData.groundspeed ?? 0,
-      heading: null,
-      timeToGo: jetBlueData.timeToArrival ? parseInt(jetBlueData.timeToArrival) : 0,
-      wheelWeightState: "",
-      grossWeight: null,
-      windSpeed: null,
-      windDirection: null,
-      flightPhase: jetBlueData.flightStatusText ?? "",
-    };
+    // Map JetBlueFlightData to FlightData using the utility function
+    const flightData = mapJetBlueToFlightData(jetBlueData);
 
     return NextResponse.json<FlightData>(flightData);
   } catch (error) {

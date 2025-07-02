@@ -12,6 +12,44 @@ function mph2Knot(mphSpeed: number) {
   return 0.869 * mphSpeed;
 }
 
+/**
+ * Maps Intelsat flight data to the universal FlightData format
+ */
+function mapIntelsatToFlightData(data: AAIntelsatFlightData): FlightData {
+  return {
+    timestamp: data.time_stamp,
+    eta: null,
+    flightDuration: Math.max(parseInt(data.flight_info.total_flight_duration_mins), parseInt(data.flight_info.time_to_land_mins)),
+    flightNumber: data.flight_info.flight_no,
+    latitude: parseFloat(data.positional_info.latitude),
+    longitude: parseFloat(data.positional_info.longitude),
+    noseId: "N/A",
+    paState: data.service_info.flight_phase,
+    vehicleId: data.aircraft_info.tail_no,
+    destination: data.flight_info.arrival_airport_icao,
+    origin: data.flight_info.departure_airport_icao,
+    flightId: data.flight_info.flight_no,
+    airspeed: null,
+    airTemperature: mph2Knot(
+      L2Calculation(
+        parseFloat(data.positional_info.horizontal_velocity_mph),
+        parseFloat(data.positional_info.vertical_velocity_mph),
+      ),
+    ),
+    altitude: parseInt(data.positional_info.above_gnd_level_feet),
+    distanceToGo: null,
+    doorState: null,
+    groundspeed: mph2Knot(parseFloat(data.positional_info.horizontal_velocity_mph)),
+    heading: null,
+    timeToGo: parseInt(data.flight_info.time_to_land_mins),
+    wheelWeightState: "N/A",
+    grossWeight: null,
+    windSpeed: null,
+    windDirection: null,
+    flightPhase: data.service_info.flight_phase,
+  };
+}
+
 export async function GET() {
   try {
     const response = await fetch(API_URL, {
@@ -28,38 +66,9 @@ export async function GET() {
     const data: AAIntelsatFlightData = await response.json();
     
     // Transform the Intelsat API response into our standardized FlightData format
-    return NextResponse.json<FlightData>({
-      timestamp: data.time_stamp,
-      eta: null,
-      flightDuration: Math.max(parseInt(data.flight_info.total_flight_duration_mins), parseInt(data.flight_info.time_to_land_mins)),
-      flightNumber: data.flight_info.flight_no,
-      latitude: parseFloat(data.positional_info.latitude),
-      longitude: parseFloat(data.positional_info.longitude),
-      noseId: "N/A",
-      paState: data.service_info.flight_phase,
-      vehicleId: data.aircraft_info.tail_no,
-      destination: data.flight_info.arrival_airport_icao,
-      origin: data.flight_info.departure_airport_icao,
-      flightId: data.flight_info.flight_no,
-      airspeed: null,
-      airTemperature: mph2Knot(
-        L2Calculation(
-          parseFloat(data.positional_info.horizontal_velocity_mph),
-          parseFloat(data.positional_info.vertical_velocity_mph),
-        ),
-      ),
-      altitude: parseInt(data.positional_info.above_gnd_level_feet),
-      distanceToGo: null,
-      doorState: null,
-      groundspeed: mph2Knot(parseFloat(data.positional_info.horizontal_velocity_mph)),
-      heading: null,
-      timeToGo: parseInt(data.flight_info.time_to_land_mins),
-      wheelWeightState: "N/A",
-      grossWeight: null,
-      windSpeed: null,
-      windDirection: null,
-      flightPhase: data.service_info.flight_phase,
-    });
+    const flightData = mapIntelsatToFlightData(data);
+    
+    return NextResponse.json<FlightData>(flightData);
   } catch (error) {
     console.error("Error fetching flight data:", error);
     return NextResponse.json(
