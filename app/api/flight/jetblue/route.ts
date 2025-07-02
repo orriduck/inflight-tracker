@@ -3,7 +3,7 @@ import { JetBlueFlightData, FlightData } from "@/types/flight";
 import * as cheerio from "cheerio";
 
 const API_URL = "http://www.flyfi.com/travel/ajax/notification.do";
-const HTML_URL = "http://www.flyfi.com/travel/";
+const SECONDARY_URL = "http://www.flyfi.com/travel/";
 
 export async function GET() {
   try {
@@ -29,7 +29,7 @@ export async function GET() {
     const jetBlueData: JetBlueFlightData = await response.json();
 
     // Fetch the HTML page for additional metadata
-    const htmlResponse = await fetch(HTML_URL, { cache: "no-store" });
+    const htmlResponse = await fetch(SECONDARY_URL, { cache: "no-store" });
     const html = await htmlResponse.text();
     const $ = cheerio.load(html);
 
