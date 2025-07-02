@@ -11,10 +11,33 @@ import {
   useFlightData,
 } from "@/app/contexts/FlightDataContext";
 import { useState } from "react";
+import { AlertTriangle } from "lucide-react";
+
+function FlightNumberAlert() {
+  return (
+    <div className="bg-yellow-500/10 border border-yellow-500/20 text-yellow-700 dark:text-yellow-300 px-4 py-3 rounded-lg flex items-start gap-3">
+      <AlertTriangle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+      <div className="flex-1">
+        <h4 className="font-medium mb-1">Flight Number Missing</h4>
+        <p className="text-sm text-yellow-600 dark:text-yellow-400">
+          Unable to cache flight data because flight number information is not
+          available. Historical data will not be saved between sessions.
+        </p>
+      </div>
+    </div>
+  );
+}
 
 function HomePage() {
-  const { flightData, latestData, loading, error, hasLocationData, vendor } =
-    useFlightData();
+  const {
+    flightData,
+    latestData,
+    loading,
+    error,
+    hasLocationData,
+    vendor,
+    isFlightNumberMissing,
+  } = useFlightData();
   const [hasMapData, setHasMapData] = useState(false);
 
   const airlines = [
@@ -94,6 +117,7 @@ function HomePage() {
                     Loading flight data...
                   </div>
                 )}
+                {isFlightNumberMissing && !loading && <FlightNumberAlert />}
                 {/* Flight Metrics */}
                 <FlightMetrics data={latestData} loading={loading} />
                 {/* Chart */}

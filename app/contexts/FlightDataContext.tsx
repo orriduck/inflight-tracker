@@ -48,6 +48,7 @@ interface FlightDataContextType {
   hasLocationData: boolean;
   vendor: string | null | undefined;
   resetData: () => void;
+  isFlightNumberMissing: boolean;
 }
 
 const FlightDataContext = createContext<FlightDataContextType | undefined>(
@@ -57,6 +58,9 @@ const FlightDataContext = createContext<FlightDataContextType | undefined>(
 // Helper to generate the localStorage key for a specific flight
 const getFlightStorageKey = (flightNumber: string) =>
   `flightData-${flightNumber}`;
+
+// Helper to generate the localStorage key for cached vendor
+const getVendorStorageKey = () => `cachedVendor`;
 
 // Check if flight number is valid (just needs to be a non-empty string)
 const isValidFlightNumber = (flightNumber?: string | null): boolean =>
@@ -79,17 +83,61 @@ const detectVendor = async (): Promise<string | null> => {
   return null;
 };
 
+// Helper to validate if a cached vendor is still working
+const validateVendor = async (vendor: string): Promise<boolean> => {
+  try {
+    const uri = config.flightInfoUri[vendor as keyof typeof config.flightInfoUri];
+    if (!uri) return false;
+    
+    const response = await fetch(uri);
+    return response.ok;
+  } catch (err) {
+    console.warn(`Cached vendor ${vendor} is no longer working:`, err);
+    return false;
+  }
+};
+
+// Helper to get cached vendor or detect new one
+const getOrDetectVendor = async (): Promise<string | null> => {
+  // Try to get cached vendor first
+  const cachedVendor = localStorage.getItem(getVendorStorageKey());
+  
+  if (cachedVendor) {
+    // Validate if cached vendor is still working
+    const isValid = await validateVendor(cachedVendor);
+    if (isValid) {
+      console.log(`Using cached vendor: ${cachedVendor}`);
+      return cachedVendor;
+    } else {
+      console.log(`Cached vendor ${cachedVendor} is no longer working, detecting new vendor...`);
+      localStorage.removeItem(getVendorStorageKey());
+    }
+  }
+  
+  // Detect new vendor
+  const newVendor = await detectVendor();
+  if (newVendor) {
+    console.log(`Detected new vendor: ${newVendor}`);
+    localStorage.setItem(getVendorStorageKey(), newVendor);
+  }
+  
+  return newVendor;
+};
+
 export function FlightDataProvider({ children }: { children: ReactNode }) {
   const [flightData, setFlightData] = useState<FlightData[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [currentFlightNumber, setCurrentFlightNumber] = useState<string | null>(null);
+  const [currentFlightNumber, setCurrentFlightNumber] = useState<string | null>(
+    null,
+  );
   const [vendor, setVendor] = useState<string | null | undefined>(undefined);
+  const [isFlightNumberMissing, setIsFlightNumberMissing] = useState(false);
 
-  // Detect vendor on component mount
+  // Lazy vendor detection on component mount
   useEffect(() => {
     const initializeVendor = async () => {
-      const detectedVendor = await detectVendor();
+      const detectedVendor = await getOrDetectVendor();
       setVendor(detectedVendor);
     };
     initializeVendor();
@@ -106,7 +154,9 @@ export function FlightDataProvider({ children }: { children: ReactNode }) {
         }
 
         // Fetch using detected vendor
-        const response = await fetch(config.flightInfoUri[vendor as keyof typeof config.flightInfoUri]);
+        const response = await fetch(
+          config.flightInfoUri[vendor as keyof typeof config.flightInfoUri],
+        );
         if (!response.ok) {
           throw new Error("Failed to fetch initial flight data");
         }
@@ -117,6 +167,7 @@ export function FlightDataProvider({ children }: { children: ReactNode }) {
         // Only proceed with localStorage if we have a valid flight number
         if (isValidFlightNumber(flightNumber)) {
           setCurrentFlightNumber(flightNumber);
+          setIsFlightNumberMissing(false);
 
           // Try to load saved data for this flight
           const storageKey = getFlightStorageKey(flightNumber);
@@ -147,6 +198,7 @@ export function FlightDataProvider({ children }: { children: ReactNode }) {
         } else {
           console.log("No valid flight number found, not using localStorage");
           setFlightData([initialData]);
+          setIsFlightNumberMissing(true);
         }
 
         setError(null);
@@ -166,7 +218,9 @@ export function FlightDataProvider({ children }: { children: ReactNode }) {
 
     const fetchData = async () => {
       try {
-        const response = await fetch(config.flightInfoUri[vendor as keyof typeof config.flightInfoUri]);
+        const response = await fetch(
+          config.flightInfoUri[vendor as keyof typeof config.flightInfoUri],
+        );
         if (!response.ok) {
           throw new Error("Failed to fetch flight data");
         }
@@ -179,6 +233,7 @@ export function FlightDataProvider({ children }: { children: ReactNode }) {
           if (flightNumber !== currentFlightNumber) {
             setCurrentFlightNumber(flightNumber);
           }
+          setIsFlightNumberMissing(false);
 
           setFlightData((prevData) => {
             const newData = [...prevData, data];
@@ -188,11 +243,19 @@ export function FlightDataProvider({ children }: { children: ReactNode }) {
           });
         } else {
           setFlightData((prevData) => [...prevData, data]);
+          setIsFlightNumberMissing(true);
         }
 
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : "An error occurred");
+        
+        // If vendor fails, try to detect a new one
+        console.log("Vendor failed, attempting to detect new vendor...");
+        const newVendor = await getOrDetectVendor();
+        if (newVendor && newVendor !== vendor) {
+          setVendor(newVendor);
+        }
       }
     };
 
@@ -232,6 +295,7 @@ export function FlightDataProvider({ children }: { children: ReactNode }) {
         hasLocationData,
         vendor,
         resetData,
+        isFlightNumberMissing,
       }}
     >
       {children}
