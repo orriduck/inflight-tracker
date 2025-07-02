@@ -92,3 +92,29 @@ export interface AAIntelsatFlightData {
     expected_time_to_coverage_sec: string;
   };
 }
+
+export interface JetBlueFlightData {
+  destinationIATA: string | null;
+  eventType: string;
+  flightETA: string | null;
+  flightRunningStatus: number;
+  flightStatusText: string | null;
+  flightTotalDuration: number;
+  markers: string | null;
+  message: string;
+  originIATA: string | null;
+  promotionText: string | null;
+  showWelcomeText: boolean;
+  timeToArrival: string | null;
+  welcomeText: string | null;
+  altitude?: number | null;
+  groundspeed?: number | null;
+  terminal?: string | null;
+  gate?: string | null;
+  currentTemp?: string | null;
+  todayWeather?: string | null;
+  tomorrowWeather?: string | null;
+  lastUpdated?: string | null;
+  originCity?: string | null;
+  destinationCity?: string | null;
+}
