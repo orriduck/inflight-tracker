@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Rocket, Ruler, PlaneLanding, Compass } from "lucide-react";
 import { useEffect, useState } from "react";
 import { feetToMeters, knotsToKmh, getCompassDirection } from "@/lib/utils";
-import Counter from "@/components/ui/counter";
 
 // Define interfaces for our metrics
 interface BaseMetric {
@@ -18,15 +17,12 @@ interface BaseMetric {
 
 interface StandardMetric extends BaseMetric {
   value: number | null;
-  places: number[];
   isCoordinate?: false;
 }
 
 interface CoordinateMetric extends BaseMetric {
   wholeValue: number;
   decimalValue: number;
-  wholePlaces: number[];
-  decimalPlaces: number[];
   isCoordinate: true;
 }
 
@@ -67,7 +63,6 @@ export default function FlightMetrics({ data, loading }: FlightMetricsProps) {
       secondaryValue: knotsToKmh(data.groundspeed),
       secondaryUnit: "km/h",
       icon: <Rocket className="h-5 w-5" />,
-      places: [1000, 100, 10, 1],
     },
     {
       title: "Altitude",
@@ -76,7 +71,6 @@ export default function FlightMetrics({ data, loading }: FlightMetricsProps) {
       secondaryValue: feetToMeters(data.altitude),
       secondaryUnit: "m",
       icon: <PlaneLanding className="h-5 w-5" />,
-      places: [10000, 1000, 100, 10, 1],
     },
     {
       title: "Heading",
@@ -85,7 +79,6 @@ export default function FlightMetrics({ data, loading }: FlightMetricsProps) {
       secondaryValue: data.heading ? getCompassDirection(data.heading) : null,
       secondaryUnit: "",
       icon: <Compass className="h-5 w-5" />,
-      places: [100, 10, 1],
     },
     {
       title: "Distance To Go",
@@ -96,7 +89,6 @@ export default function FlightMetrics({ data, loading }: FlightMetricsProps) {
         : null,
       secondaryUnit: "km",
       icon: <Ruler className="h-5 w-5" />,
-      places: [1000, 100, 10, 1],
     },
     {
       title: "Latitude",
@@ -104,8 +96,6 @@ export default function FlightMetrics({ data, loading }: FlightMetricsProps) {
       decimalValue: Math.floor((Math.abs(data.latitude) % 1) * 1000),
       unit: data.latitude >= 0 ? "°N" : "°S",
       icon: <Ruler className="h-5 w-5" />,
-      wholePlaces: [100, 10, 1],
-      decimalPlaces: [100, 10, 1],
       isCoordinate: true,
     },
     {
@@ -114,8 +104,6 @@ export default function FlightMetrics({ data, loading }: FlightMetricsProps) {
       decimalValue: Math.floor((Math.abs(data.longitude) % 1) * 1000),
       unit: data.longitude >= 0 ? "°E" : "°W",
       icon: <Ruler className="h-5 w-5" />,
-      wholePlaces: [100, 10, 1],
-      decimalPlaces: [100, 10, 1],
       isCoordinate: true,
     },
   ];
@@ -133,27 +121,15 @@ export default function FlightMetrics({ data, loading }: FlightMetricsProps) {
                 {metric.icon}
                 <h3 className="font-medium">{metric.title}</h3>
               </div>
-              <div className="font-bold">
+              <div className="font-bold text-2xl">
                 {metric.isCoordinate ? (
                   <div className="flex items-baseline">
-                    <div>
-                      <Counter
-                        value={metric.wholeValue}
-                        fontSize={24}
-                        places={metric.wholePlaces}
-                        gap={1}
-                        borderRadius={4}
-                      />
+                    <div key={`${metric.title}-whole-${metric.wholeValue}`} className="animate-slide-in">
+                      {metric.wholeValue}
                     </div>
                     <span className="text-xl">.</span>
-                    <div>
-                      <Counter
-                        value={metric.decimalValue}
-                        fontSize={18}
-                        places={metric.decimalPlaces}
-                        gap={1}
-                        borderRadius={4}
-                      />
+                    <div key={`${metric.title}-decimal-${metric.decimalValue}`} className="animate-slide-in">
+                      {metric.decimalValue.toString().padStart(3, '0')}
                     </div>
                     <span className="text-sm ml-1 font-normal">
                       {metric.unit}
@@ -161,28 +137,22 @@ export default function FlightMetrics({ data, loading }: FlightMetricsProps) {
                   </div>
                 ) : (
                   <div className="flex items-baseline">
-                    <div>
+                    <div key={`${metric.title}-${metric.value}`} className="animate-slide-in">
                       {metric.value !== undefined && metric.value !== null ? (
                         <>
-                          <Counter
-                            value={metric.value}
-                            fontSize={24}
-                            places={metric.places}
-                            gap={1}
-                            borderRadius={4}
-                          />
+                          {metric.value}
                           <span className="text-sm ml-1 font-normal">
                             {metric.unit}
                           </span>
                         </>
                       ) : (
-                        <>Not Available ({metric.value})</>
+                        <>Not Available</>
                       )}
                     </div>
                   </div>
                 )}
                 {!loading && !!metric.secondaryValue && (
-                  <div className="text-sm font-normal text-muted-foreground mt-1">
+                  <div key={`${metric.title}-secondary-${metric.secondaryValue}`} className="text-sm font-normal text-muted-foreground mt-1 animate-slide-in">
                     ({metric.secondaryValue} {metric.secondaryUnit})
                   </div>
                 )}

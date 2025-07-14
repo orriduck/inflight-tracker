@@ -149,3 +149,18 @@ h3 {
     filter: drop-shadow(0 0 8px #22c55e);
   }
 }
+
+.animate-slide-in {
+  animation: fade-in-from-bottom 0.3s ease-out;
+}
+
+@keyframes fade-in-from-bottom {
+  0% {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
