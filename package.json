@@ -9,7 +9,10 @@
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
-    "pretty-quick": "pretty-quick"
+    "pretty-quick": "pretty-quick",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build"
   },
   "dependencies": {
     "@mapbox/togeojson": "^0.16.2",
@@ -33,12 +36,14 @@
     "react-dom": "^19.0.0",
     "react-map-gl": "^8.0.4",
     "recharts": "^2.15.3",
+    "rust": "1.0.8-nightly",
     "sonner": "^2.0.3",
     "tailwind-merge": "^3.2.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "@tauri-apps/cli": "^2.6.2",
     "@types/geojson": "^7946.0.16",
     "@types/node": "^20",
     "@types/react": "^19",
