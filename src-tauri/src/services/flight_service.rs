@@ -4,7 +4,8 @@ use std::time::Duration;
 
 use crate::models::{
     FlightData, DataSource, ToFlightData,
-    AAIntelsatFlightData, JetBlueFlightData
+    AAIntelsatFlightData, JetBlueFlightData,
+    AdsbAircraftData, AdsbFlightData, AdsbApiResponse
 };
 
 #[derive(Debug, Clone)]
@@ -106,29 +107,140 @@ impl FlightService {
         Ok(data.to_flight_data())
     }
 
+    /// Fetch flight data from ADSB.lol API by flight callsign
+    pub async fn fetch_adsb_by_callsign(&self, callsign: &str) -> Result<FlightData, FlightServiceError> {
+        let url = format!("https://api.adsb.lol/api/v1/flights?callsign={}", callsign);
+        
+        let response = self.client
+            .get(&url)
+            .header("Accept", "application/json")
+            .send()
+            .await?;
+
+        if !response.status().is_success() {
+            return Err(FlightServiceError::RequestError(
+                reqwest::Error::from(response.error_for_status().unwrap_err())
+            ));
+        }
+
+        let api_response: AdsbApiResponse<AdsbFlightData> = response.json().await?;
+        
+        if api_response.data.is_empty() {
+            return Err(FlightServiceError::NoDataAvailable);
+        }
+
+        // Return the first matching flight
+        Ok(api_response.data[0].to_flight_data())
+    }
+
+    /// Fetch flight data from ADSB.lol API by ICAO address
+    pub async fn fetch_adsb_by_icao(&self, icao_address: &str) -> Result<FlightData, FlightServiceError> {
+        let url = format!("https://api.adsb.lol/api/v1/aircraft/{}", icao_address);
+        
+        let response = self.client
+            .get(&url)
+            .header("Accept", "application/json")
+            .send()
+            .await?;
+
+        if !response.status().is_success() {
+            return Err(FlightServiceError::RequestError(
+                reqwest::Error::from(response.error_for_status().unwrap_err())
+            ));
+        }
+
+        let aircraft_data: AdsbAircraftData = response.json().await?;
+        Ok(aircraft_data.to_flight_data())
+    }
+
+    /// Fetch all current flights from ADSB.lol API
+    pub async fn fetch_adsb_all_flights(&self) -> Result<Vec<FlightData>, FlightServiceError> {
+        let url = "https://api.adsb.lol/api/v1/flights";
+        
+        let response = self.client
+            .get(url)
+            .header("Accept", "application/json")
+            .send()
+            .await?;
+
+        if !response.status().is_success() {
+            return Err(FlightServiceError::RequestError(
+                reqwest::Error::from(response.error_for_status().unwrap_err())
+            ));
+        }
+
+        let api_response: AdsbApiResponse<AdsbFlightData> = response.json().await?;
+        
+        Ok(api_response.data.into_iter().map(|flight| flight.to_flight_data()).collect())
+    }
+
     /// Fetch flight data from a specific vendor
     pub async fn fetch_by_vendor(&self, vendor: &str) -> Result<FlightData, FlightServiceError> {
         match vendor {
             "american-intelsat" => self.fetch_american_intelsat().await,
             "american-viasat" => self.fetch_american_viasat().await,
             "jetblue" => self.fetch_jetblue().await,
+            "adsb" => {
+                // For ADSB, we'll try to fetch all flights and return the first one
+                // In a real scenario, we'd need more specific parameters
+                let flights = self.fetch_adsb_all_flights().await?;
+                flights.into_iter().next().ok_or(FlightServiceError::NoDataAvailable)
+            },
             _ => Err(FlightServiceError::UnsupportedVendor(vendor.to_string())),
         }
     }
 
     /// Test if a vendor endpoint is available
     pub async fn test_vendor(&self, vendor: &str) -> bool {
-        let url = match vendor {
-            "american-intelsat" => "https://www.aainflight.com/api/v1/connectivity/intelsat/system-status",
-            "american-viasat" => "https://www.aainflight.com/api/v1/connectivity/viasat/system-status",
-            "jetblue" => "https://ifecondor-api.jetblue.com/",
-            _ => return false,
+        // Test basic TCP connectivity to host
+        let (host, port) = match vendor {
+            "american-intelsat" | "american-viasat" => ("www.aainflight.com", 443),
+            "jetblue" => ("ifecondor-api.jetblue.com", 443),
+            "adsb" => ("api.adsb.lol", 80),
+            _ => {
+                log::warn!("Unknown vendor: {}", vendor);
+                return false;
+            }
         };
 
-        match self.client.get(url).send().await {
-            Ok(response) => response.status().is_success(),
-            Err(_) => false,
+        use tokio::net::TcpStream;
+        use std::time::Duration;
+        
+        let timeout = Duration::from_secs(5);
+        match tokio::time::timeout(timeout, TcpStream::connect((host, port))).await {
+            Ok(Ok(_)) => {
+                log::info!("✓ Vendor {} TCP connection successful ({}:{})", vendor, host, port);
+                true
+            },
+            Ok(Err(error)) => {
+                log::error!("✗ Vendor {} TCP connection failed: {}", vendor, error);
+                false
+            },
+            Err(_) => {
+                log::error!("✗ Vendor {} TCP connection timeout ({}:{})", vendor, host, port);
+                false
+            }
         }
+    }
+
+    /// Get list of available vendors
+    pub async fn get_available_vendors(&self) -> Vec<String> {
+        log::info!("Starting vendor availability check...");
+        let vendors = vec!["american-intelsat", "american-viasat", "jetblue", "adsb"];
+        let mut available = Vec::new();
+
+        for vendor in vendors {
+            log::info!("Testing vendor: {}", vendor);
+            if self.test_vendor(vendor).await {
+                log::info!("✓ Vendor {} is available", vendor);
+                available.push(vendor.to_string());
+            } else {
+                log::warn!("✗ Vendor {} is not available", vendor);
+            }
+        }
+
+        log::info!("Available vendors: {:?}", available);
+        available
     }
 
     /// Merge multiple flight data sources with priority

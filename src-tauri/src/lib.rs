@@ -2,7 +2,7 @@ mod models;
 mod services;
 mod commands;
 
-use commands::{AppState, get_flight_data, detect_vendors, get_primary_vendor, validate_vendor, merge_flight_data, test_vendor_endpoint, get_all_available_data};
+use commands::{AppState, get_flight_data, detect_vendors, get_primary_vendor, validate_vendor, merge_flight_data, test_vendor_endpoint, get_available_vendors, get_all_available_data, get_adsb_flight_by_callsign, get_adsb_flight_by_icao, get_all_adsb_flights};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -15,7 +15,11 @@ pub fn run() {
       validate_vendor,
       merge_flight_data,
       test_vendor_endpoint,
-      get_all_available_data
+      get_available_vendors,
+      get_all_available_data,
+      get_adsb_flight_by_callsign,
+      get_adsb_flight_by_icao,
+      get_all_adsb_flights
     ])
     .setup(|app| {
       if cfg!(debug_assertions) {

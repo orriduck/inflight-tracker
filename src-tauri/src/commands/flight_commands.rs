@@ -90,6 +90,15 @@ pub async fn test_vendor_endpoint(
 }
 
 #[tauri::command]
+pub async fn get_available_vendors(
+    state: State<'_, AppState>,
+) -> Result<Vec<String>, String> {
+    let service = state.flight_service.lock().await;
+    
+    Ok(service.get_available_vendors().await)
+}
+
+#[tauri::command]
 pub async fn get_all_available_data(
     state: State<'_, AppState>,
 ) -> Result<Option<FlightData>, String> {
@@ -114,4 +123,42 @@ pub async fn get_all_available_data(
     }
     
     Ok(service.merge_flight_data(data_sources))
+}
+
+#[tauri::command]
+pub async fn get_adsb_flight_by_callsign(
+    callsign: String,
+    state: State<'_, AppState>,
+) -> Result<FlightData, String> {
+    let service = state.flight_service.lock().await;
+    
+    service
+        .fetch_adsb_by_callsign(&callsign)
+        .await
+        .map_err(|e| format!("Failed to fetch ADSB flight data by callsign: {}", e))
+}
+
+#[tauri::command]
+pub async fn get_adsb_flight_by_icao(
+    icao_address: String,
+    state: State<'_, AppState>,
+) -> Result<FlightData, String> {
+    let service = state.flight_service.lock().await;
+    
+    service
+        .fetch_adsb_by_icao(&icao_address)
+        .await
+        .map_err(|e| format!("Failed to fetch ADSB flight data by ICAO: {}", e))
+}
+
+#[tauri::command]
+pub async fn get_all_adsb_flights(
+    state: State<'_, AppState>,
+) -> Result<Vec<FlightData>, String> {
+    let service = state.flight_service.lock().await;
+    
+    service
+        .fetch_adsb_all_flights()
+        .await
+        .map_err(|e| format!("Failed to fetch all ADSB flights: {}", e))
 }

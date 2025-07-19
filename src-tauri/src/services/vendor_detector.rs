@@ -15,7 +15,7 @@ impl VendorDetector {
 
     /// Detect which vendors are currently available
     pub async fn detect_available_vendors(&self) -> Vec<String> {
-        let vendors = vec!["american-intelsat", "american-viasat", "jetblue"];
+        let vendors = vec!["american-intelsat", "american-viasat", "jetblue", "adsb"];
         let mut available = Vec::new();
 
         for vendor in vendors {
@@ -51,6 +51,7 @@ impl VendorDetector {
             "american-intelsat" => DataSource::AmericanIntelsat.priority(),
             "american-viasat" => DataSource::AmericanViasat.priority(),
             "jetblue" => DataSource::JetBlue.priority(),
+            "adsb" => DataSource::AdsbLol.priority(),
             _ => 0,
         }
     }
@@ -61,6 +62,7 @@ impl VendorDetector {
             "american-intelsat" => Some(DataSource::AmericanIntelsat),
             "american-viasat" => Some(DataSource::AmericanViasat),
             "jetblue" => Some(DataSource::JetBlue),
+            "adsb" => Some(DataSource::AdsbLol),
             _ => None,
         }
     }

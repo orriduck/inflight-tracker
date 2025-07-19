@@ -3,15 +3,27 @@
 ## Project Overview
 This is a Next.js flight tracking application that has been converted to a Tauri desktop app with a Rust backend. The app tracks real-time flight data from multiple airline APIs (American Airlines Intelsat/ViaSat, JetBlue) and displays it in a React frontend.
 
+## Functionalities
+- When connect to in flight wifi (detected the vendor that has the data)
+    - Show the flight data
+    - Enhance the data fetching experience and accuracy by using both OpenADSB data + in flight wifi data
+        - This requires the inflight Wifi able to access the network
+- If only connect to Wifi that can access network (which user might not be in flight)
+    - User can type in a flight number or random track a flight's data through OpenADSB
+
 ## Technology Stack
-- **Frontend**: Next.js 15, React 19, TypeScript, Tailwind CSS
+- **Frontend**: Next.js 15, React 19, TypeScript, Tailwind CSS, BuouUI
 - **Backend**: Rust with Tauri 2.6.2
 - **Package Manager**: pnpm
-- **Data Sources**: American Airlines APIs, JetBlue API
+- **Data Sources**: American Airlines APIs, JetBlue API, OpenADSB
 - **Maps**: MapBox/MapLibre GL
 - **Charts**: Recharts
 
 ## Development Commands
+
+### Rules
+
+Additional information agent can reference to can check on `rules` folder
 
 ### Primary Commands
 - `pnpm tauri:dev` - Start development server with hot reload (Next.js + Rust)

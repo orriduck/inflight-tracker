@@ -35,6 +35,7 @@ pub enum DataSource {
     AmericanIntelsat,
     AmericanViasat,
     JetBlue,
+    AdsbLol,
 }
 
 impl DataSource {
@@ -44,6 +45,7 @@ impl DataSource {
             DataSource::AmericanIntelsat => 10,
             DataSource::AmericanViasat => 9,
             DataSource::JetBlue => 8,
+            DataSource::AdsbLol => 7,
         }
     }
 }

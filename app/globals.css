@@ -2,6 +2,36 @@
 @import "tw-animate-css";
 /* @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap'); */
 
+/* CSS animations for better performance */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float-gentle {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.6s ease-out forwards;
+  opacity: 0;
+}
+
+.animate-float {
+  animation: float-gentle 4s ease-in-out infinite;
+}
+
 body {
   font-family: 'Cal Sans', sans-serif !important;
 }

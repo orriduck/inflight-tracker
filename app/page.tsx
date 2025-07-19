@@ -1,140 +1,117 @@
 "use client";
 
-import NavBar from "@/components/NavBar";
-import FlightMetrics from "@/components/FlightMetrics";
-import FlightChart from "@/components/FlightChart";
-import MapBackground from "@/components/MapBackground";
-import WifiIndicator from "@/components/WifiIndicator";
-import RotatingText from "@/components/ui/rorating-text";
-import {
-  FlightDataProvider,
-  useFlightData,
-} from "@/app/contexts/FlightDataContext";
-import { useState } from "react";
-import { AlertTriangle } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ArrowRight, RefreshCw } from "lucide-react";
+import GlassCard from "@/components/buouui/glass-card";
+import StatusBar from "@/components/ui/status-bar";
+import { TauriFlightService } from "@/lib/tauri-api";
+import { useRouter } from "next/navigation";
 
-function FlightNumberAlert() {
-  return (
-    <div className="bg-yellow-500/10 border border-yellow-500/20 text-yellow-700 dark:text-yellow-300 px-4 py-3 rounded-lg flex items-start gap-3">
-      <AlertTriangle className="w-5 h-5 mt-0.5 flex-shrink-0" />
-      <div className="flex-1">
-        <h4 className="font-medium mb-1">Flight Number Missing</h4>
-        <p className="text-sm text-yellow-600 dark:text-yellow-400">
-          Unable to cache flight data because flight number information is not
-          available. Historical data will not be saved between sessions.
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function HomePage() {
-  const {
-    flightData,
-    latestData,
-    loading,
-    error,
-    hasLocationData,
-    vendor,
-    isFlightNumberMissing,
-  } = useFlightData();
-  const [hasMapData, setHasMapData] = useState(false);
-
-  const airlines = [
-    "American Airlines",
-    "*Delta Air Lines",
-    "*United Airlines",
-    "*Southwest Airlines",
-    "*JetBlue Airways",
-    "*Alaska Airlines",
-    "*Spirit Airlines",
-    "*China Eastern Airlines",
-    "*China Southern Airlines",
-    "*Air China",
-  ];
-
-  return (
-    <>
-      <NavBar
-        from={latestData.origin}
-        to={latestData.destination}
-        flightNumber={latestData.flightNumber}
-        flightDuration={latestData.flightDuration}
-        timeToGo={latestData.timeToGo}
-        flightData={flightData}
-        rightElement={<WifiIndicator />}
-      />
-      {!vendor ? (
-        <div className="fixed inset-x-0 top-[64px] bottom-0 bg-background/95 backdrop-blur-sm z-40">
-          <div className="h-full w-full flex flex-col items-center justify-center px-4">
-            <div className="w-full text-center space-y-4">
-              <h1 className="text-6xl inline-flex items-center justify-center gap-2">
-                Connect to{" "}
-                <RotatingText
-                  texts={airlines}
-                  mainClassName="px-2 sm:px-2 md:px-3 bg-cyan-300 text-black overflow-hidden py-0.5 sm:py-1 md:py-2 justify-center rounded-lg"
-                  staggerFrom={"last"}
-                  initial={{ y: "100%" }}
-                  animate={{ y: 0 }}
-                  exit={{ y: "-120%" }}
-                  staggerDuration={0.025}
-                  splitLevelClassName="overflow-hidden pb-0.5 sm:pb-1 md:pb-1"
-                  transition={{ type: "spring", damping: 30, stiffness: 400 }}
-                  rotationInterval={3000}
-                />
-                In-Flight WiFi
-              </h1>
-              <p className="text-xl md:text-2xl text-muted-foreground">
-                to continue tracking your flight in real-time
-              </p>
-              <p className="text-muted-foreground text-sm">
-                * is the airline that will be supported in the future.
-              </p>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <>
-          {hasLocationData && (
-            <MapBackground
-              flightData={flightData}
-              hasMapData={hasMapData}
-              setHasMapData={setHasMapData}
-            />
-          )}
-          <main
-            className={`container mx-auto p-4 space-y-4 transition-all duration-700 ${hasMapData ? "pt-[70vh]" : "pt-24"} overflow-x-hidden`}
-          >
-            <div className={`${hasMapData ? "rounded-lg" : ""}`}>
-              <div className="container mx-auto space-y-4 p-4">
-                {error && (
-                  <div className="bg-destructive/10 text-destructive px-4 py-2 rounded-lg">
-                    Error: {error}
-                  </div>
-                )}
-                {loading && (
-                  <div className="text-muted-foreground px-4 py-2">
-                    Loading flight data...
-                  </div>
-                )}
-                {isFlightNumberMissing && !loading && <FlightNumberAlert />}
-                {/* Flight Metrics */}
-                <FlightMetrics data={latestData} loading={loading} />
-                {/* Chart */}
-                <FlightChart flightData={flightData} />
-              </div>
-            </div>
-          </main>
-        </>
-      )}
-    </>
-  );
-}
+type VendorStatus = 'idle' | 'checking' | 'success' | 'error';
 
 export default function Home() {
+  const [flightNumber, setFlightNumber] = useState("");
+  const [vendorStatus, setVendorStatus] = useState<VendorStatus>('idle');
+  const [statusMessage, setStatusMessage] = useState('Initializing...');
+  const [availableVendors, setAvailableVendors] = useState<string[]>([]);
+  const router = useRouter();
+
+  const handleStartTracking = () => {
+    if (flightNumber.trim()) {
+      // Navigate to tracker with flight number
+      router.push(`/tracker?flight=${flightNumber}`);
+    }
+  };
+
+  const checkVendorAvailability = async () => {
+    try {
+      setVendorStatus('checking');
+      setStatusMessage('Checking flight data providers...');
+      
+      // Start checking vendors
+      const vendors = await TauriFlightService.detectAvailableVendors();
+      
+      if (vendors.length > 0) {
+        setVendorStatus('success');
+        setStatusMessage(`Connected to ${vendors.length} provider${vendors.length > 1 ? 's' : ''}`);
+        setAvailableVendors(vendors.map(vendor => {
+          // Format vendor names for display
+          switch(vendor) {
+            case 'american-intelsat': return 'American Airlines (Intelsat)';
+            case 'american-viasat': return 'American Airlines (ViaSat)';
+            case 'jetblue': return 'JetBlue';
+            case 'adsb': return 'OpenADSB Network';
+            default: return vendor;
+          }
+        }));
+      } else {
+        setVendorStatus('error');
+        setStatusMessage('No flight data providers available');
+        setAvailableVendors([]);
+      }
+    } catch (error) {
+      console.error('Error checking vendors:', error);
+      setVendorStatus('error');
+      setStatusMessage('Failed to connect to flight data providers');
+      setAvailableVendors([]);
+    }
+  };
+
+  useEffect(() => {
+    // Check vendor availability when page loads
+    checkVendorAvailability();
+  }, []);
+
   return (
-    <FlightDataProvider>
-      <HomePage />
-    </FlightDataProvider>
+    <div className="min-h-screen flex flex-col">
+      {/* Main Content */}
+      <div className="flex-1 flex items-center justify-center px-6">
+        <div className="text-center space-y-8">
+          {/* Title */}
+          <h1 className="text-6xl lg:text-7xl font-bold">
+            Inflight Tracker
+          </h1>
+
+          {/* Input and Button */}
+          <div className="flex items-center gap-4 justify-center">
+            <GlassCard className="min-w-[300px] p-4">
+              <input
+                type="text"
+                placeholder="Enter flight number (e.g. AA1234)"
+                value={flightNumber}
+                onChange={(e) => setFlightNumber(e.target.value)}
+                className="w-full bg-transparent border-none outline-none font-medium"
+                onKeyDown={(e) => e.key === 'Enter' && handleStartTracking()}
+              />
+            </GlassCard>
+
+            <GlassCard 
+              variant="button"
+              className="p-4 font-semibold flex items-center gap-2"
+              onClick={handleStartTracking}
+            >
+              <span>Start Tracker</span>
+              <ArrowRight className="size-5" />
+            </GlassCard>
+          </div>
+        </div>
+      </div>
+
+      {/* Status Bar */}
+      <div className="pb-8 flex justify-center items-center gap-4">
+        <StatusBar 
+          status={vendorStatus}
+          message={statusMessage}
+          vendors={availableVendors}
+        />
+        <GlassCard 
+          variant="button"
+          className="p-3 flex items-center rounded-full"
+          onClick={checkVendorAvailability}
+        >
+          <RefreshCw className={`size-3 ${vendorStatus === 'checking' ? 'animate-spin' : ''}`} />
+        </GlassCard>
+      </div>
+    </div>
   );
 }

@@ -152,6 +152,30 @@ export class TauriFlightAPI {
     const result = await invoke<TauriFlightData | null>('get_all_available_data');
     return result ? convertTauriFlightData(result) : null;
   }
+
+  /**
+   * Get ADSB flight data by callsign
+   */
+  static async getAdsbFlightByCallsign(callsign: string): Promise<FlightData> {
+    const result = await invoke<TauriFlightData>('get_adsb_flight_by_callsign', { callsign });
+    return convertTauriFlightData(result);
+  }
+
+  /**
+   * Get ADSB flight data by ICAO address
+   */
+  static async getAdsbFlightByIcao(icaoAddress: string): Promise<FlightData> {
+    const result = await invoke<TauriFlightData>('get_adsb_flight_by_icao', { icaoAddress });
+    return convertTauriFlightData(result);
+  }
+
+  /**
+   * Get all current ADSB flights
+   */
+  static async getAllAdsbFlights(): Promise<FlightData[]> {
+    const result = await invoke<TauriFlightData[]>('get_all_adsb_flights');
+    return result.map(convertTauriFlightData);
+  }
 }
 
 // Legacy compatibility - update existing fetch calls to use Tauri backend

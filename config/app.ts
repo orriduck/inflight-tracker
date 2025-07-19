@@ -4,6 +4,7 @@ export const config = {
   supportedVendors: [
     "american-viasat",
     "american-intelsat", 
-    "jetblue"
+    "jetblue",
+    "adsb"
   ],
 } as const;

@@ -2,19 +2,19 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Next.js: dev",
+            "name": "Tauri Dev",
             "type": "node",
             "request": "launch",
             "runtimeExecutable": "bash",
             "runtimeArgs": [
                 "-c",
-                "source ~/.nvm/nvm.sh && nvm use && npm run dev"
+                "source ~/.nvm/nvm.sh && nvm use && pnpm tauri:dev"
             ],
             "skipFiles": [
                 "<node_internals>/**"
             ],
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen"
-        }
+        },
     ]
 } 
