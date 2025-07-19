@@ -7,8 +7,9 @@ import {
   useState,
   ReactNode,
 } from "react";
-import { config } from "@/config/app";
 import { FlightData } from "@/types/flight";
+import { TauriFlightService } from "@/lib/tauri-api";
+import { config } from "@/config/app";
 import { toast } from "sonner";
 
 // Default flight data
@@ -66,31 +67,20 @@ const getVendorStorageKey = () => `cachedVendor`;
 const isValidFlightNumber = (flightNumber?: string | null): boolean =>
   typeof flightNumber === "string" && flightNumber.trim() !== "";
 
-// Helper to detect available vendor
+// Helper to detect available vendor using Tauri backend
 const detectVendor = async (): Promise<string | null> => {
-  const uris = Object.entries(config.flightInfoUri);
-
-  for (const [vendor, uri] of uris) {
-    try {
-      const response = await fetch(uri);
-      if (response.ok) {
-        return vendor;
-      }
-    } catch (err) {
-      console.warn(`Failed to connect to ${vendor} endpoint:`, err);
-    }
+  try {
+    return await TauriFlightService.getPrimaryVendor();
+  } catch (err) {
+    console.warn('Failed to detect vendor through Tauri backend:', err);
+    return null;
   }
-  return null;
 };
 
 // Helper to validate if a cached vendor is still working
 const validateVendor = async (vendor: string): Promise<boolean> => {
   try {
-    const uri = config.flightInfoUri[vendor as keyof typeof config.flightInfoUri];
-    if (!uri) return false;
-    
-    const response = await fetch(uri);
-    return response.ok;
+    return await TauriFlightService.validateVendor(vendor);
   } catch (err) {
     console.warn(`Cached vendor ${vendor} is no longer working:`, err);
     return false;
@@ -153,15 +143,8 @@ export function FlightDataProvider({ children }: { children: ReactNode }) {
           throw new Error("No available flight data vendors");
         }
 
-        // Fetch using detected vendor
-        const response = await fetch(
-          config.flightInfoUri[vendor as keyof typeof config.flightInfoUri],
-        );
-        if (!response.ok) {
-          throw new Error("Failed to fetch initial flight data");
-        }
-
-        const initialData = await response.json();
+        // Fetch using detected vendor through Tauri backend
+        const initialData = await TauriFlightService.fetchFlightData(vendor);
         const flightNumber = initialData.flightNumber;
 
         // Only proceed with localStorage if we have a valid flight number
@@ -218,14 +201,8 @@ export function FlightDataProvider({ children }: { children: ReactNode }) {
 
     const fetchData = async () => {
       try {
-        const response = await fetch(
-          config.flightInfoUri[vendor as keyof typeof config.flightInfoUri],
-        );
-        if (!response.ok) {
-          throw new Error("Failed to fetch flight data");
-        }
-
-        const data = await response.json();
+        // Fetch data through Tauri backend
+        const data = await TauriFlightService.fetchFlightData(vendor);
         const flightNumber = data.flightNumber;
 
         // Only use localStorage if we have a valid flight number
