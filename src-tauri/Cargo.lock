@@ -101,6 +101,7 @@ dependencies = [
  "serde_json",
  "tauri",
  "tauri-build",
+ "tauri-plugin-geolocation",
  "tauri-plugin-log",
  "thiserror 1.0.69",
  "tokio",
@@ -856,7 +857,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "778e2ac28f6c47af28e4907f13ffd1e1ddbd400980a9abd7c8df189bf578a5ad"
 dependencies = [
  "libc",
- "windows-sys 0.52.0",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -3089,7 +3090,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys",
- "windows-sys 0.52.0",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -3870,6 +3871,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "tauri-plugin-geolocation"
+version = "2.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d3e5d020065f33a6590a5fbf7bdd508845399fbe644c2daeb51be319df99fdd7"
+dependencies = [
+ "log",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-plugin",
+ "thiserror 2.0.12",
+]
+
+[[package]]
 name = "tauri-plugin-log"
 version = "2.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3999,7 +4014,7 @@ dependencies = [
  "getrandom 0.3.3",
  "once_cell",
  "rustix",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]

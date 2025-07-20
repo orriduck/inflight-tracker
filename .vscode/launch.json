@@ -2,19 +2,22 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Tauri Dev",
-            "type": "node",
+            "name": "Tauri Development Debug",
+            "type": "lldb",
             "request": "launch",
-            "runtimeExecutable": "bash",
-            "runtimeArgs": [
-                "-c",
-                "source ~/.nvm/nvm.sh && nvm use && pnpm tauri:dev"
-            ],
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
-            "console": "integratedTerminal",
-            "internalConsoleOptions": "neverOpen"
+            "program": "${workspaceFolder}/src-tauri/target/debug/app",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "ui:dev"
         },
+        {
+            "name": "Tauri Production Debug",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/src-tauri/target/release/app",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "build:debug"
+        }
     ]
 } 

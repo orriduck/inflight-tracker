@@ -1,6 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
-/* @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap'); */
 
 /* CSS animations for better performance */
 @keyframes fade-in-up {
@@ -15,7 +15,8 @@
 }
 
 @keyframes float-gentle {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px);
   }
   50% {
@@ -33,18 +34,18 @@
 }
 
 body {
-  font-family: 'Cal Sans', sans-serif !important;
+  font-family: "Manrope", sans-serif !important;
 }
 
 h1,
 h2,
 h3 {
-  font-family: 'Cal Sans', sans-serif !important;
+  font-family: "Manrope", sans-serif !important;
   font-weight: 700;
 }
 
 .font-metric {
-  font-family: 'JetBrains Mono', monospace !important;
+  font-family: "JetBrains Mono", monospace !important;
 }
 
 @custom-variant dark (&:is(.dark *));

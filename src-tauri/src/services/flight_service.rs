@@ -5,7 +5,7 @@ use std::time::Duration;
 use crate::models::{
     FlightData, DataSource, ToFlightData,
     AAIntelsatFlightData, JetBlueFlightData,
-    AdsbAircraftData, AdsbFlightData, AdsbApiResponse
+    AdsbAircraftData
 };
 
 #[derive(Debug, Clone)]
@@ -33,6 +33,43 @@ impl FlightService {
             .expect("Failed to create HTTP client");
 
         Self { client }
+    }
+
+    /// Convert v2 API aircraft response to FlightData
+    fn convert_v2_aircraft_to_flight_data(&self, aircraft: &Value, callsign: &str) -> Result<FlightData, FlightServiceError> {
+        let timestamp = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_secs()
+            .to_string();
+
+        Ok(FlightData {
+            timestamp,
+            eta: None,
+            flight_duration: 0,
+            flight_number: callsign.to_string(),
+            latitude: aircraft.get("lat").and_then(|v| v.as_f64()).unwrap_or(0.0),
+            longitude: aircraft.get("lon").and_then(|v| v.as_f64()).unwrap_or(0.0),
+            nose_id: aircraft.get("hex").and_then(|v| v.as_str()).unwrap_or("").to_string(),
+            pa_state: None,
+            vehicle_id: aircraft.get("hex").and_then(|v| v.as_str()).unwrap_or("").to_string(),
+            destination: aircraft.get("to").and_then(|v| v.as_str()).unwrap_or("").to_string(),
+            origin: aircraft.get("from").and_then(|v| v.as_str()).unwrap_or("").to_string(),
+            flight_id: aircraft.get("hex").and_then(|v| v.as_str()).unwrap_or("").to_string(),
+            airspeed: aircraft.get("ias").and_then(|v| v.as_f64()),
+            air_temperature: None,
+            altitude: aircraft.get("alt_baro").and_then(|v| v.as_f64()).unwrap_or(0.0) as i32,
+            distance_to_go: None,
+            door_state: None,
+            groundspeed: aircraft.get("gs").and_then(|v| v.as_f64()).unwrap_or(0.0),
+            heading: aircraft.get("track").and_then(|v| v.as_f64()),
+            time_to_go: 0,
+            wheel_weight_state: "unknown".to_string(),
+            gross_weight: None,
+            wind_speed: None,
+            wind_direction: None,
+            flight_phase: "cruise".to_string(),
+        })
     }
 
     /// Fetch flight data from American Airlines Intelsat API
@@ -107,9 +144,14 @@ impl FlightService {
         Ok(data.to_flight_data())
     }
 
-    /// Fetch flight data from ADSB.lol API by flight callsign
+    /// Fetch flight data from ADSB.lol API by callsign
+    pub async fn fetch_adsb(&self, callsign: &str) -> Result<FlightData, FlightServiceError> {
+        self.fetch_adsb_by_callsign(callsign).await
+    }
+
+    /// Fetch flight data from ADSB.lol API by flight callsign using v2 endpoint
     pub async fn fetch_adsb_by_callsign(&self, callsign: &str) -> Result<FlightData, FlightServiceError> {
-        let url = format!("https://api.adsb.lol/api/v1/flights?callsign={}", callsign);
+        let url = format!("https://api.adsb.lol/v2/callsign/{}", callsign);
         
         let response = self.client
             .get(&url)
@@ -123,14 +165,21 @@ impl FlightService {
             ));
         }
 
-        let api_response: AdsbApiResponse<AdsbFlightData> = response.json().await?;
+        let data: Value = response.json().await?;
         
-        if api_response.data.is_empty() {
-            return Err(FlightServiceError::NoDataAvailable);
+        // V2 endpoint returns different structure, need to handle the response
+        if let Some(aircraft_array) = data.get("ac").and_then(|v| v.as_array()) {
+            if aircraft_array.is_empty() {
+                return Err(FlightServiceError::NoDataAvailable);
+            }
+            
+            // Convert first aircraft to FlightData
+            let aircraft = &aircraft_array[0];
+            let flight_data = self.convert_v2_aircraft_to_flight_data(aircraft, callsign)?;
+            Ok(flight_data)
+        } else {
+            Err(FlightServiceError::NoDataAvailable)
         }
-
-        // Return the first matching flight
-        Ok(api_response.data[0].to_flight_data())
     }
 
     /// Fetch flight data from ADSB.lol API by ICAO address
@@ -153,9 +202,45 @@ impl FlightService {
         Ok(aircraft_data.to_flight_data())
     }
 
-    /// Fetch all current flights from ADSB.lol API
+    /// Fetch nearby flights from ADSB.lol API by location, returning only callsigns
+    pub async fn fetch_adsb_nearby_callsigns(&self, latitude: f64, longitude: f64, distance: u32) -> Result<Vec<String>, FlightServiceError> {
+        let url = format!("https://api.adsb.lol/v2/lat/{}/lon/{}/dist/{}", latitude, longitude, distance);
+        
+        let response = self.client
+            .get(&url)
+            .header("Accept", "application/json")
+            .send()
+            .await?;
+
+        if !response.status().is_success() {
+            return Err(FlightServiceError::RequestError(
+                reqwest::Error::from(response.error_for_status().unwrap_err())
+            ));
+        }
+
+        let data: Value = response.json().await?;
+        let mut callsigns = Vec::new();
+
+        print!("{}", data);
+        
+        if let Some(aircraft_array) = data.get("ac").and_then(|v| v.as_array()) {
+            for aircraft in aircraft_array {
+                if let Some(flight) = aircraft.get("flight").and_then(|v| v.as_str()) {
+                    if !flight.trim().is_empty() {
+                        callsigns.push(flight.trim().to_string());
+                    }
+                }
+            }
+        }
+        
+        Ok(callsigns)
+    }
+
+    /// Fetch all current flights from ADSB.lol API using v2 endpoint
     pub async fn fetch_adsb_all_flights(&self) -> Result<Vec<FlightData>, FlightServiceError> {
-        let url = "https://api.adsb.lol/api/v1/flights";
+        // v2 API doesn't have a direct "all flights" endpoint, so we'll use a broad geographical search
+        // This covers most of North America and Europe as an example
+        let url = "https://api.adsb.lol/v2/lat/40/lon/-100/dist/5000"; // 5000km radius from central US
         
         let response = self.client
             .get(url)
@@ -169,9 +254,22 @@ impl FlightService {
             ));
         }
 
-        let api_response: AdsbApiResponse<AdsbFlightData> = response.json().await?;
+        let data: Value = response.json().await?;
+        let mut flights = Vec::new();
         
-        Ok(api_response.data.into_iter().map(|flight| flight.to_flight_data()).collect())
+        if let Some(aircraft_array) = data.get("ac").and_then(|v| v.as_array()) {
+            for aircraft in aircraft_array {
+                if let Some(flight) = aircraft.get("flight").and_then(|v| v.as_str()) {
+                    if !flight.trim().is_empty() {
+                        if let Ok(flight_data) = self.convert_v2_aircraft_to_flight_data(aircraft, flight.trim()) {
+                            flights.push(flight_data);
+                        }
+                    }
+                }
+            }
+        }
+        
+        Ok(flights)
     }
 
     /// Fetch flight data from a specific vendor
@@ -181,11 +279,20 @@ impl FlightService {
             "american-viasat" => self.fetch_american_viasat().await,
             "jetblue" => self.fetch_jetblue().await,
             "adsb" => {
-                // For ADSB, we'll try to fetch all flights and return the first one
-                // In a real scenario, we'd need more specific parameters
-                let flights = self.fetch_adsb_all_flights().await?;
-                flights.into_iter().next().ok_or(FlightServiceError::NoDataAvailable)
+                // ADSB requires a callsign parameter, return error if not provided
+                Err(FlightServiceError::NoDataAvailable)
             },
+            _ => Err(FlightServiceError::UnsupportedVendor(vendor.to_string())),
+        }
+    }
+
+    /// Fetch flight data from a specific vendor with callsign (for ADSB)
+    pub async fn fetch_by_vendor_with_callsign(&self, vendor: &str, callsign: &str) -> Result<FlightData, FlightServiceError> {
+        match vendor {
+            "american-intelsat" => self.fetch_american_intelsat().await,
+            "american-viasat" => self.fetch_american_viasat().await,
+            "jetblue" => self.fetch_jetblue().await,
+            "adsb" => self.fetch_adsb(callsign).await,
             _ => Err(FlightServiceError::UnsupportedVendor(vendor.to_string())),
         }
     }

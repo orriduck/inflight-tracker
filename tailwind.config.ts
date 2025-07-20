@@ -1,19 +1,27 @@
-import type { Config } from 'tailwindcss'
+import type { Config } from "tailwindcss";
 
 const config: Config = {
   content: [
-    './pages/**/*.{js,ts,jsx,tsx,mdx}',
-    './components/**/*.{js,ts,jsx,tsx,mdx}',
-    './app/**/*.{js,ts,jsx,tsx,mdx}',
+    "./components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Cal Sans', 'sans-serif'],
+        sans: ["Cal Sans", "sans-serif"],
+      },
+      keyframes: {
+        trail: {
+          "0%": { "--angle": "0deg" },
+          "100%": { "--angle": "360deg" },
+        },
+      },
+      animation: {
+        trail: "trail var(--duration) linear infinite",
       },
     },
   },
   plugins: [],
-}
+};
 
-export default config
+export default config;

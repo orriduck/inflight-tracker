@@ -102,6 +102,14 @@ export class TauriFlightAPI {
   }
 
   /**
+   * Get flight data from a specific vendor with callsign (for ADSB)
+   */
+  static async getFlightDataWithCallsign(vendor: string, callsign: string): Promise<FlightData> {
+    const result = await invoke<TauriFlightData>('get_flight_data_with_callsign', { vendor, callsign });
+    return convertTauriFlightData(result);
+  }
+
+  /**
    * Detect all available vendors
    */
   static async detectVendors(): Promise<string[]> {
@@ -148,8 +156,10 @@ export class TauriFlightAPI {
   /**
    * Get merged flight data from all available sources
    */
-  static async getAllAvailableData(): Promise<FlightData | null> {
-    const result = await invoke<TauriFlightData | null>('get_all_available_data');
+  static async getAllAvailableData(flightNumber?: string): Promise<FlightData | null> {
+    const result = await invoke<TauriFlightData | null>('get_all_available_data_with_callsign', { 
+      callsign: flightNumber || ''
+    });
     return result ? convertTauriFlightData(result) : null;
   }
 
@@ -175,6 +185,13 @@ export class TauriFlightAPI {
   static async getAllAdsbFlights(): Promise<FlightData[]> {
     const result = await invoke<TauriFlightData[]>('get_all_adsb_flights');
     return result.map(convertTauriFlightData);
+  }
+
+  /**
+   * Get nearby ADSB flight callsigns by location
+   */
+  static async getNearbyAdsbCallsigns(latitude: number, longitude: number, distance: number = 250): Promise<string[]> {
+    return await invoke<string[]>('get_nearby_adsb_callsigns', { latitude, longitude, distance });
   }
 }
 

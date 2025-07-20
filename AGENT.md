@@ -15,9 +15,16 @@ This is a Next.js flight tracking application that has been converted to a Tauri
 - **Frontend**: Next.js 15, React 19, TypeScript, Tailwind CSS, BuouUI
 - **Backend**: Rust with Tauri 2.6.2
 - **Package Manager**: pnpm
-- **Data Sources**: American Airlines APIs, JetBlue API, OpenADSB
+- **Data Sources**: American Airlines APIs, JetBlue API, OpenADSB (via adsb.lol API)
 - **Maps**: MapBox/MapLibre GL
 - **Charts**: Recharts
+
+## API Endpoints & Data Sources
+- **OpenADSB**: Uses https://api.adsb.lol/docs as the primary ADSB vendor
+  - Flight search by callsign: `https://api.adsb.lol/api/v2/callsign/{callsign}`
+  - All nearby flights based on location: `https://api.adsb.lol/api/v2/lat/{latitude}/lon/{longitude}/dist/{radius}`
+- **American Airlines**: Intelsat/ViaSat in-flight WiFi APIs
+- **JetBlue**: In-flight WiFi APIs
 
 ## Development Commands
 
@@ -27,7 +34,7 @@ Additional information agent can reference to can check on `rules` folder
 
 ### Primary Commands
 - `pnpm tauri:dev` - Start development server with hot reload (Next.js + Rust)
-- `pnpm tauri:build` - Build production app bundle for macOS
+- `pnpm tauri:build` - Build build app bundle for macOS
 - `pnpm build` - Build Next.js static export only
 - `pnpm dev` - Start Next.js development server only
 
