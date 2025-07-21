@@ -101,8 +101,8 @@ dependencies = [
  "serde_json",
  "tauri",
  "tauri-build",
- "tauri-plugin-geolocation",
  "tauri-plugin-log",
+ "tauri-plugin-positioner",
  "thiserror 1.0.69",
  "tokio",
  "uuid",
@@ -3871,20 +3871,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "tauri-plugin-geolocation"
-version = "2.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d3e5d020065f33a6590a5fbf7bdd508845399fbe644c2daeb51be319df99fdd7"
-dependencies = [
- "log",
- "serde",
- "serde_json",
- "tauri",
- "tauri-plugin",
- "thiserror 2.0.12",
-]
-
-[[package]]
 name = "tauri-plugin-log"
 version = "2.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3904,6 +3890,21 @@ dependencies = [
  "tauri-plugin",
  "thiserror 2.0.12",
  "time",
+]
+
+[[package]]
+name = "tauri-plugin-positioner"
+version = "2.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3a01e373ea3f3f5f46d40f434ba13bd12fa4833aabab50dfc09f6362bad27c95"
+dependencies = [
+ "log",
+ "serde",
+ "serde_json",
+ "serde_repr",
+ "tauri",
+ "tauri-plugin",
+ "thiserror 2.0.12",
 ]
 
 [[package]]

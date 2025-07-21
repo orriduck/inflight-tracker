@@ -1,5 +1,5 @@
+use super::super::{DataSource, FlightData, ToFlightData};
 use serde::{Deserialize, Serialize};
-use super::super::{FlightData, ToFlightData, DataSource};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AircraftInfo {
@@ -101,16 +101,17 @@ fn parse_string_to_i32(s: &str) -> i32 {
 
 impl ToFlightData for AAIntelsatFlightData {
     fn to_flight_data(&self) -> FlightData {
-        let horizontal_velocity = parse_string_to_f64(&self.positional_info.horizontal_velocity_mph);
+        let horizontal_velocity =
+            parse_string_to_f64(&self.positional_info.horizontal_velocity_mph);
         let vertical_velocity = parse_string_to_f64(&self.positional_info.vertical_velocity_mph);
         let total_velocity = l2_calculation(horizontal_velocity, vertical_velocity);
-        
+
         FlightData {
             timestamp: self.time_stamp.clone(),
             eta: None,
             flight_duration: std::cmp::max(
                 parse_string_to_i32(&self.flight_info.total_flight_duration_mins),
-                parse_string_to_i32(&self.flight_info.time_to_land_mins)
+                parse_string_to_i32(&self.flight_info.time_to_land_mins),
             ),
             flight_number: self.flight_info.flight_no.clone(),
             latitude: parse_string_to_f64(&self.positional_info.latitude),

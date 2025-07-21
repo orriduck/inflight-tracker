@@ -1,5 +1,5 @@
+use super::super::{DataSource, FlightData, ToFlightData};
 use serde::{Deserialize, Serialize};
-use super::super::{FlightData, ToFlightData, DataSource};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AdsbAircraftData {
@@ -60,10 +60,16 @@ impl ToFlightData for AdsbAircraftData {
             flight_number: self.callsign.clone().unwrap_or_else(|| "N/A".to_string()),
             latitude: self.latitude.unwrap_or(0.0),
             longitude: self.longitude.unwrap_or(0.0),
-            nose_id: self.registration.clone().unwrap_or_else(|| "N/A".to_string()),
+            nose_id: self
+                .registration
+                .clone()
+                .unwrap_or_else(|| "N/A".to_string()),
             pa_state: None,
             vehicle_id: self.icao_address.clone(),
-            destination: self.destination.clone().unwrap_or_else(|| "N/A".to_string()),
+            destination: self
+                .destination
+                .clone()
+                .unwrap_or_else(|| "N/A".to_string()),
             origin: self.origin.clone().unwrap_or_else(|| "N/A".to_string()),
             flight_id: self.flight_id.clone(),
             airspeed: self.speed,
@@ -78,10 +84,10 @@ impl ToFlightData for AdsbAircraftData {
             gross_weight: None,
             wind_speed: None,
             wind_direction: None,
-            flight_phase: if self.altitude.unwrap_or(0.0) > 1000.0 { 
-                "Cruise".to_string() 
-            } else { 
-                "Ground".to_string() 
+            flight_phase: if self.altitude.unwrap_or(0.0) > 1000.0 {
+                "Cruise".to_string()
+            } else {
+                "Ground".to_string()
             },
         }
     }

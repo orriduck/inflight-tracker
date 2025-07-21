@@ -1,5 +1,5 @@
+use super::super::{DataSource, FlightData, ToFlightData};
 use serde::{Deserialize, Serialize};
-use super::super::{FlightData, ToFlightData, DataSource};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct JetBlueFlightData {
@@ -48,44 +48,56 @@ pub struct JetBlueFlightData {
 fn parse_time_to_minutes(time_str: &str) -> i32 {
     // Parse time strings like "1h 30m" or "45m" to minutes
     let mut total_minutes = 0;
-    
+
     if let Some(hours_pos) = time_str.find('h') {
         if let Ok(hours) = time_str[..hours_pos].trim().parse::<i32>() {
             total_minutes += hours * 60;
         }
     }
-    
+
     if let Some(minutes_pos) = time_str.find('m') {
-        let start = if let Some(h_pos) = time_str.find('h') { h_pos + 1 } else { 0 };
+        let start = if let Some(h_pos) = time_str.find('h') {
+            h_pos + 1
+        } else {
+            0
+        };
         if let Ok(minutes) = time_str[start..minutes_pos].trim().parse::<i32>() {
             total_minutes += minutes;
         }
     }
-    
+
     total_minutes
 }
 
 impl ToFlightData for JetBlueFlightData {
     fn to_flight_data(&self) -> FlightData {
-        let time_to_go = self.time_to_arrival
+        let time_to_go = self
+            .time_to_arrival
             .as_ref()
             .map(|t| parse_time_to_minutes(t))
             .unwrap_or(0);
 
         FlightData {
-            timestamp: self.last_updated.clone().unwrap_or_else(|| {
-                chrono::Utc::now().to_rfc3339()
-            }),
+            timestamp: self
+                .last_updated
+                .clone()
+                .unwrap_or_else(|| chrono::Utc::now().to_rfc3339()),
             eta: self.flight_eta.clone(),
             flight_duration: self.flight_total_duration,
             flight_number: "N/A".to_string(), // JetBlue doesn't seem to provide flight number in this data
-            latitude: 0.0, // JetBlue doesn't provide lat/lon in this format
+            latitude: 0.0,                    // JetBlue doesn't provide lat/lon in this format
             longitude: 0.0,
             nose_id: "N/A".to_string(),
             pa_state: self.flight_status_text.clone(),
             vehicle_id: "N/A".to_string(),
-            destination: self.destination_iata.clone().unwrap_or_else(|| "N/A".to_string()),
-            origin: self.origin_iata.clone().unwrap_or_else(|| "N/A".to_string()),
+            destination: self
+                .destination_iata
+                .clone()
+                .unwrap_or_else(|| "N/A".to_string()),
+            origin: self
+                .origin_iata
+                .clone()
+                .unwrap_or_else(|| "N/A".to_string()),
             flight_id: "N/A".to_string(),
             airspeed: None,
             air_temperature: self.current_temp.as_ref().and_then(|t| t.parse().ok()),

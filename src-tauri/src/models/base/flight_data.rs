@@ -1,6 +1,6 @@
-use serde::{Deserialize, Serialize};
-use chrono::Utc;
 use crate::models::base::vendor::DataSource;
+use chrono::Utc;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FlightData {
@@ -65,7 +65,12 @@ impl FlightData {
 
     /// Merges two FlightData instances with priority-based field selection
     /// The `other` parameter's data source determines priority for conflicts
-    pub fn merge_with_priority(&mut self, other: &FlightData, other_source: DataSource, self_source: DataSource) {
+    pub fn merge_with_priority(
+        &mut self,
+        other: &FlightData,
+        other_source: DataSource,
+        self_source: DataSource,
+    ) {
         let other_has_priority = other_source.priority() > self_source.priority();
 
         // Helper macro to merge optional fields
@@ -136,7 +141,6 @@ impl FlightData {
         merge_option!(wind_direction);
         merge_string!(flight_phase);
     }
-
 }
 
 impl Default for FlightData {

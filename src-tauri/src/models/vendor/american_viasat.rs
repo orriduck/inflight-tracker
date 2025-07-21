@@ -1,5 +1,5 @@
+use super::super::{DataSource, FlightData, ToFlightData};
 use serde::{Deserialize, Serialize};
-use super::super::{FlightData, ToFlightData, DataSource};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AAViaSatFlightData {

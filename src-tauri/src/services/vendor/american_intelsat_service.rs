@@ -1,6 +1,6 @@
+use crate::models::{AAIntelsatFlightData, FlightData, ToFlightData};
 use reqwest::Client;
 use std::time::Duration;
-use crate::models::{FlightData, AAIntelsatFlightData, ToFlightData};
 
 #[derive(Debug, Clone)]
 pub struct AmericanIntelsatService {
@@ -29,52 +29,70 @@ impl AmericanIntelsatService {
 
     /// Test if the vendor endpoint is available
     pub async fn ping_vendor(&self) -> bool {
-        use tokio::net::TcpStream;
         use std::time::Duration;
-        
+        use tokio::net::TcpStream;
+
         let host = "www.aainflight.com";
         let port = 443;
         let timeout = Duration::from_secs(5);
-        
+
         match tokio::time::timeout(timeout, TcpStream::connect((host, port))).await {
             Ok(Ok(_)) => {
-                log::info!("American Intelsat TCP connection successful ({}:{})", host, port);
+                log::info!(
+                    "American Intelsat TCP connection successful ({}:{})",
+                    host,
+                    port
+                );
                 true
-            },
+            }
             Ok(Err(error)) => {
                 log::error!("American Intelsat TCP connection failed: {}", error);
                 false
-            },
+            }
             Err(_) => {
-                log::error!("American Intelsat TCP connection timeout ({}:{})", host, port);
+                log::error!(
+                    "American Intelsat TCP connection timeout ({}:{})",
+                    host,
+                    port
+                );
                 false
             }
         }
     }
 
     /// Get flight data (callsign parameter is ignored for in-flight vendors)
-    pub async fn get_data(&self, _callsign: Option<&str>) -> Result<FlightData, AmericanIntelsatError> {
+    pub async fn get_data(
+        &self,
+        _callsign: Option<&str>,
+    ) -> Result<FlightData, AmericanIntelsatError> {
         log::info!("Fetching American Airlines Intelsat flight data");
-        
+
         let url = "https://www.aainflight.com/api/v1/connectivity/intelsat/system-status";
-        
-        let response = self.client
+
+        let response = self
+            .client
             .get(url)
             .header("Accept", "application/json")
             .send()
             .await?;
 
         if !response.status().is_success() {
-            log::error!("American Intelsat API returned status: {}", response.status());
-            return Err(AmericanIntelsatError::RequestError(
-                reqwest::Error::from(response.error_for_status().unwrap_err())
-            ));
+            log::error!(
+                "American Intelsat API returned status: {}",
+                response.status()
+            );
+            return Err(AmericanIntelsatError::RequestError(reqwest::Error::from(
+                response.error_for_status().unwrap_err(),
+            )));
         }
 
         let data: AAIntelsatFlightData = response.json().await?;
         let flight_data = data.to_flight_data();
-        
-        log::info!("Successfully fetched American Intelsat data for flight: {}", flight_data.flight_number);
+
+        log::info!(
+            "Successfully fetched American Intelsat data for flight: {}",
+            flight_data.flight_number
+        );
         Ok(flight_data)
     }
 }
