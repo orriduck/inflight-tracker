@@ -1,4 +1,4 @@
-import { FlightData } from '@/types/flight';
+import { FlightData } from '@/src/types/flight_data';
 
 /**
  * Calculates the great-circle distance between two points on Earth using the Haversine formula.
