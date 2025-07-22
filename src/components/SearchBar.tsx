@@ -1,49 +1,77 @@
 "use client";
 
 import { useState } from "react";
-import { Search } from "lucide-react";
+import { Search, RefreshCw } from "lucide-react";
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
+import { useRouter } from "next/navigation";
 
 interface SearchBarProps {
   onSearch: (flightNumber: string) => void;
+  onRefresh: () => void;
   placeholder?: string;
-  className?: string;
+  recommendation: string[];
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({
   onSearch,
+  onRefresh,
   placeholder = "Enter Flight Number (e.g. B61159)",
-  className = "",
+  recommendation,
 }) => {
   const [flightNumber, setFlightNumber] = useState("");
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (flightNumber.trim()) {
-      onSearch(flightNumber.trim());
-    }
-  };
+  const router = useRouter();
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className={`flex gap-2 w-full max-w-md ${className}`}
-    >
-      <div className="relative flex-1">
-        <Input
-          type="text"
-          value={flightNumber}
-          onChange={(e) => setFlightNumber(e.target.value)}
-          placeholder={placeholder}
-          className="w-full px-4 py-3 pl-10 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        />
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+    <div className="space-y-2">
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <Input
+            type="text"
+            value={flightNumber}
+            onChange={(e) => {
+              setFlightNumber(e.target.value);
+              onSearch(e.target.value);
+            }}
+            placeholder={placeholder}
+            className="w-full px-4 py-3 text-lg"
+          />
+        </div>
+        <Button
+          disabled={!flightNumber.trim()}
+          className="flex items-center gap-x-2"
+          onClick={() => router.push(`/tracker/${flightNumber}`)}
+        >
+          <Search className="text-gray-400" />
+          Track Callsign
+        </Button>
       </div>
-      <Button type="submit" disabled={!flightNumber.trim()}>
-        Search
-      </Button>
-    </form>
+      <div className={`flex items-center gap-2 bg-muted rounded-lg`}>
+        <Button
+          onClick={onRefresh}
+          variant="ghost"
+          size="icon"
+          className="flex items-center gap-1 px-2"
+        >
+          <RefreshCw className="w-4 h-4" />
+        </Button>
+        <div className="text-gray-400 flex overflow-x-auto flex-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          {recommendation.length > 0 ? (
+            recommendation.map((callSign) => (
+              <div
+                key={callSign}
+                className=" rounded px-2 whitespace-nowrap cursor-pointer"
+                onClick={() => router.push(`/tracker/${callSign}`)}
+              >
+                {callSign}
+              </div>
+            ))
+          ) : (
+            <div>No recommendation</div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 };
 

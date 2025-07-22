@@ -87,18 +87,18 @@ pub async fn ping_vendors() -> Result<Vec<VendorStatus>, String> {
 /// Get nearby flights recommendation from ADSB
 #[tauri::command]
 pub async fn get_flights_recommendation(
-    squawk: Option<u32>,
+    aircraft_type: Option<&str>,
 ) -> Result<Vec<String>, String> {
-    let squawk_code = squawk.unwrap_or(1200);
+    let aircraft_type = aircraft_type.unwrap_or("A320");
     log::info!(
-        "Getting callsign recommendation with squawk: {}",
-        squawk_code
+        "Getting callsign recommendation with aircraft type: {}",
+        aircraft_type
     ); 
 
     let adsb_service = AdsbService::new();
 
     match adsb_service
-        .get_recommend_callsigns(Some(squawk_code))
+        .get_recommend_callsigns(Some(aircraft_type))
         .await
     {
         Ok(callsigns) => {

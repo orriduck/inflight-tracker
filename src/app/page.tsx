@@ -17,6 +17,8 @@ export default function HomePage() {
   const [recommendationCallSign, setRecommendationCallSign] = useState<
     string[]
   >([]);
+  const [filteredRecommendationCallSign, setFilteredRecommendationCallSign] =
+    useState<string[]>([]);
 
   const getRecommendation = async () => {
     setStatus({
@@ -41,21 +43,38 @@ export default function HomePage() {
 
   useEffect(() => {
     getRecommendation();
+
+    // Set up periodic refresh every 30 seconds
+    const interval = setInterval(() => {
+      getRecommendation();
+    }, 30000);
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(interval);
   }, []);
 
   const handleSearch = (flightNumber: string) => {
-    setStatus({
-      statusType: StatusType.LOADING,
-      message: `Searching for flight ${flightNumber}...`,
-    });
+    if (!flightNumber.trim()) {
+      setFilteredRecommendationCallSign(recommendationCallSign);
+      return;
+    }
+    setFilteredRecommendationCallSign(
+      recommendationCallSign.filter((callSign) =>
+        callSign.toLowerCase().startsWith(flightNumber.toLowerCase()),
+      ),
+    );
   };
 
   return (
     <div className="relative h-screen w-full">
       <div className="flex flex-col items-center justify-center h-full px-4">
-        <div className="grid grid-cols-1 gap-8 text-center">
+        <div className="grid grid-cols-1 gap-8 text-center w-96">
           <h1 className="text-5xl font-bold">Inflight Tracker</h1>
-          <SearchBar onSearch={handleSearch} />
+          <SearchBar
+            onSearch={handleSearch}
+            recommendation={filteredRecommendationCallSign}
+            onRefresh={getRecommendation}
+          />
           <div
             className={`transition-all duration-100 ${!!status ? "opacity-100" : "opacity-0"}`}
           >

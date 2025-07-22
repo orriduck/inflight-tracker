@@ -15,11 +15,8 @@ export async function pingVendors(): Promise<Vendor[]> {
  * Get nearby flights recommendation from ADSB
  */
 export async function getFlightsRecommendation(
-  squawk: number = 1200,
 ): Promise<string[]> {
-  return await invoke<string[]>("get_flights_recommendation", {
-    squawk,
-  });
+  return await invoke<string[]>("get_flights_recommendation", {});
 }
 
 /**

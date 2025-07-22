@@ -57,7 +57,7 @@ export default function StatusBar({
 }: Props) {
   return (
     <div
-      className={`flex items-center gap-2 rounded-full ${getStatusBackgroundStyle(statusType)} px-4 py-2`}
+      className={`absolute bottom-4 w-96 flex items-center gap-2 rounded-full ${getStatusBackgroundStyle(statusType)} px-4 py-2`}
     >
       {getStatusIcon(statusType)}
       <div className={`text-sm ${getStatusTextStyle(statusType)}`}>

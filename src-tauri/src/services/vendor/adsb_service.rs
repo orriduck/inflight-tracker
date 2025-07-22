@@ -105,17 +105,17 @@ impl AdsbService {
     /// Helper method to get nearby flight callsigns only
     pub async fn get_recommend_callsigns(
         &self,
-        squawk: Option<u32>,
+        aircraft_type: Option<&str>,
     ) -> Result<Vec<String>, AdsbError> {
-        let squawk_code = squawk.unwrap_or(1200);
+        let aircraft_type = aircraft_type.unwrap_or("A320");
         log::info!(
-            "Fetching nearby ADSB callsigns with squawk: {}",
-            squawk_code
+            "Fetching nearby ADSB callsigns with aircraft type: {}",
+            aircraft_type
         );
 
         let url = format!(
-            "https://api.adsb.lol/v2/sqk/{}",
-            squawk_code
+            "https://api.adsb.lol/v2/type/{}",
+            aircraft_type
         );
 
         let response = self

@@ -19,7 +19,9 @@ export default function RootLayout({
       </head>
       <body>
         <ThemeProvider>
-          {children}
+          <div className="mt-4 px-4">
+            {children}
+          </div>
           <Toaster position="top-right" />
         </ThemeProvider>
       </body>
